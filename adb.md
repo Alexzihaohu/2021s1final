@@ -229,7 +229,7 @@ The main function of a TP monitor is to integrate other system components and ma
 - Heterogeneity: If the application needs access to different DB systems, local ACID properties of individual DB systems is not sufficient. Local TP monitor needs to interact with other TP monitors to ensure the overall ACID property. A form of 2 phase commit protocol must be employed for this purpose.
 - Control communication: If the application communicates with other remote processes, the local TP monitor should maintain the communication status among the processes to be able to recover from a crash.
 - Terminal management: Since many terminals run client software, the TP monitor should provide appropriate ACID property between the client and the server processes.
-- Presentation service: this is similar to terminal management in the sense it has to deal with different presentation (user interface) software -- e.g. X-windows 
+- Presentation service: this is similar to terminal management in the sense it has to deal with different presentation (user interface) software -- e.g. X-windows
 - Context management: E.g. maintaining the sessions etc.
 - Start/Restart: There is no difference between start and restart in TP based system.
 
@@ -241,7 +241,138 @@ The main function of a TP monitor is to integrate other system components and ma
 
 ## 6th Week
 
+### Concurrency
+
+Impose exclusive access for correct execution
+
+#### Concurrency Control
+
+To resolve conflicts and preserve database consistency
+
+- [**Dekker's algorithm**](https://www.youtube.com/watch?v=MqnpIwN7dz0) (using code)
+  - needs almost no hardware support, needs atomic reads and writes to main memory, That is exclusive access of one time cycle of memory access time!
+  - the code is very complicated to implement for more than two transactions
+  - harder to understand the algorithm for more than two transactions
+  - takes lot of storage space
+  - efficient for low lock contention
+  - uses busy waiting
+- **OS supported primitives**
+  - need no special hardware
+  - independent of number of processes
+  - machine independent
+  - through an interrupt call, the lock request is passed to the OS
+  - are very expensive (several hundreds to thousands of instructions need to be executed to save context of the requesting process.)
+  - do not use busy waiting and therefore more effective
+- **Spin locks**(访问之前查看上锁状态)
+  - using atomic lock/unlock instructions such as **test and set** or **compare and swap**
+  - need hardware support – should be able to lock bus (communication channel between CPU and memory + any other devices) for two memory cycles (one for reading and one for writing). During this time no other devices’ access is allowed to this memory location.
+  - algorithm does not depend on number of processes
+  - are very efficient for low lock contentionsv (all DB systems use them)
+  - use busy waiting
+
+#### Atomic operation
+
+- Test and set: 查看始否上锁，没上锁就上锁返回true，上了锁返回false
+- Compare and swap: 查看始否和旧值相等，相等则赋予新值并返回true，否则重置旧值返回false
+
+### Semaphore
+
+Semaphores derive from the corresponding mechanism used for trains: a train may proceed through a section of track only if the semaphore is clear. Once the train passes, the semaphore is set until the train exits that section of track.
+
+Computer semaphores have a **get()** routine that acquires the semaphore, perhaps waiting until it is free and a dual **give()** routine that returns the semaphore to the free state, perhaps waking up a waiting process.
+
+Semaphores are very simple locks; indeed, they are used to implement
+**general-purpose locks**.
+
+Spin locks are the most commonly used locks
+
+#### Implementation of Exclusive mode Semaphore(说白了就是链表排队)
+
+1. Pointer to a queue of processes
+2. If the semaphore is busy but there are no waiters, the pointer is the address of the process that owns the semaphore.
+3. If some processes are waiting, the semaphore points to a linked list of waiting processes. The process owning the semaphore is at the end of this list.
+4. After usage, the owner process wakes up the oldest process in the queue (first in, first out scheduler)
+
+#### Convoy avoiding semaphore
+
+- The previous implementation may result a long list of waiting processes, called convoy
+- To avoid convoys, a process may simply free the semaphore (set the queue to null) and then wake up every process in the list after usage.
+- In that case, each of those processes will have to re-execute the routine for acquiring semaphore.(重新排队)
+
+### Deadlocks(等对方解锁)
+
+In a deadlock, each process in the deadlock is waiting for another member to release the resources it wants.
+
+#### Solutions
+
+- Have enough resources so that no waiting occurs(不现实)
+- Pre-declare all necessary resources and allocate in a single request.(不现实)
+- Linearly order the resources and request of resources should follow this order.This type of allocation guarantees no cyclic dependencies among the transactions.
+- Periodically check the resource dependency graph for cycles. If a cycle exists - rollback (i.e., terminate) one or more transaction to eliminate cycles (deadlocks). The chosen transactions should be cheap.
+- Allow waiting for a maximum time on a lock then force Rollback.
+- Many distributed database systems maintain only local dependency graphs and use time outs for global deadlocks.
+
 ## 7th Week
+
+### Isolation
+
+Multiple concurrently running transactions may cause conflicts, allow concurrent runs as much as possible for a better performance, while avoiding conflicts as much as possible.  
+
+Isolation ensures that concurrent transactions leaves the database in the same state as if the transactions were executed separately.  
+
+Isolation guarantees consistency, provided each transaction itself is consistent.
+
+When dependency graph has cycles then there is a violation of isolation and a possibility of inconsistency.
+
+#### Conflicts
+
+- write-write (Lost update): 覆盖其他transaction的update
+- read-write (Unrepeatable read): 之前读取的被修改导致再次读取结果不一致
+- write-read (Dirty Read): 未提交的被读取
+
+#### Dependency relation
+
+In many situation inputs and outputs may be state dependant/not known in prior
+
+H1 = <(T1,R,O1), (T2, W, O5), (T1,W,O3), (T3,W,O1), (T5,R,O3), (T3,W,O2), (T5,R,O4), (T4,R,O2), (T6,W,O4)>  
+DEP(H1) = {<T1,O1,T3>, <T1,O3,T5>, <T3,O2,T4>, <T5,O4,T6> }  
+H2 = <(T1,R,O1), (T3,W,O1), (T3,W,O2),(T4,R,O2),(T1,W,O3), (T2, W, O5), (T5,R,O3), (T5,R,O4), (T6,W,O4)>  
+DEP(H2) = {<T1,O1,T3>, <T1,O3,T5>, <T3,O2,T4>, <T5,O4,T6> }  
+
+DEP(H1)=DEP(H2)
+
+#### Isolated history
+
+- A serial history = an isolated history.
+- A serial history is history that is resulted as a consequence of running transactions sequentially one by one.
+- N transactions can result in a maximum of N! serial histories.
+- Wormhole theorem: A history is isolated if and only if it has no wormholes.
+
+#### Wormhole transaction
+
+$T' \in Before(T) \cap After(T)$  
+Exist a cycle in the dependency graph of the history. Presence of a wormhole transaction implies it is not isolated
+
+#### Isolation Theorems
+
+- A transactions is a sequence of READ, WRITE, SLOCK, XLOCK actions on objects ending with COMMIT or ROLLBACK.
+- A transaction is **well formed** if each READ, WRITE and UNLOCK operation is covered earlier by a corresponding lock operation.
+- A history is **legal** if does not grant conflicting grants.
+- A transaction is **two phase** if its all lock operations precede its unlock operations.
+- **Locking theorem**: If all transactions are **well formed** and **two-phased**, then any **legal** history will be isolated.
+- **Locking theorem (Converse)**: If a transaction is **not well formed** or is **not two-phase**, then it is possible to write another transaction such that it is a **wormhole**.
+- **Rollback theorem**: An update transaction that does an UNLOCK and then does a ROLLBACK is not two phase.
+
+#### Degrees of isolation
+
+- Degree 3: A Three degree isolated Transaction has no lost updates, and has repeatable reads. This is “true” isolation. (read write两段锁, read write都有锁)
+  - sensitive to: write->write; write ->read; read->write
+- Degree 2: A Two degree isolated transaction has no lost updates and no dirty reads. (write锁是两段，read write都有锁)
+  - sensitive to: write->write; write ->read
+- Degree 1: A One degree isolation has no lost updates. (write两段锁)
+  - sensitive to: write->write
+- Degree 0 : A Zero degree transaction does not overwrite another transactions dirty data if the other transaction is at least One degree. (write加锁)
+  - It ignores all conflicts
 
 ## 8th Week
 
