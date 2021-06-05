@@ -376,7 +376,123 @@ Exist a cycle in the dependency graph of the history. Presence of a wormhole tra
 
 ## 8th Week
 
+### Granular lock
+
+Mark | meaning
+---- | ----
+X | exclusive lock
+S | shared lock
+U | update lock -- Intention to update in the future
+IS | Intent to set shared locks at finer granularity
+IX | Intent to set shared or eXclusive locks at finer granularity
+SIX | a coarse granularity shared lock with an Intent to set finer granularity exclusive locks
+
+To acquire an S mode or IS mode lock on a non-root node, one parent must be held in IS mode or higher (one of {IS,IX,S,SIX,U,X}).
+
+To acquire an X, U, SIX, or IX mode lock on a non-root node, all parents must be held in IX mode or higher (one of {IX,SIX,U,X}).
+
+![granuallock](pic/granuallock.png)
+
+### Optimistic locking
+
+When conflicts are rare, transactions can execute operations without managing locks and without waiting for locks - higher throughput
+
+- Before committing, each transaction verifies that no other transaction has modified the data – duration of locks are very short(在做update的时候先检查一下用到的值始否改变了)
+- If any conflict found, the transaction repeats the attempt
+- If no conflict, make changes and commit
+
+### Snapshot isolation
+
+Do not guarantee Serializability. However, its transaction throughput is very high compared to two phase locking scheme.
+
 ## 9th Week
+
+### Buffer Caches
+
+- Data is stored on disks(数据存在disk上)
+- Reading a data item requires reading the whole page of data (typically 4K or 8K bytes of data depending on the page size) from disk to memory containing the item.(读数据胡需要把数据从disk读到memory)
+- Modifying a data item requires reading the whole page from disk to memory containing the item, modifying the item in memory and writing the whole page to disk.(修改数据需要把所有的数据从memory存回disk)
+- Steps 2 & 3 can be very expensive and we can minimize the number of disk reads and writes by storing as many disk pages as possible in memory (buffer cache) – this means always check in buffer cache for the disk page of interest if not copy the associated page to buffer cache and perform the  necessary operation.(存读的过程很贵，尽可能多的把数据读到memory上就不要动)
+- When buffer cache is full we need to evict some pages from the buffer cache in order fetch the required pages from the disk.(buffer满了之后要释放一些page到disk)
+- Eviction needs to make sure that no one else is using the page and any modified pages should be copied to the disk.(释放的时候要确保没人要用这些page)
+- Since several transactions are executing concurrently this requires additional locking procedures using latches. These latches are used only for the duration of the operation (e.g. READ/WRITE) and can be released immediately unlike record locks which have to be kept locked until the end of the transaction.(使用latch, 类似于lock, 来保证读写的过程)
+- fix(pageid)
+  - reads pages from disk into the buffer cache if it is not already in the buffer cache
+  - fixed pages cannot be dropped from the buffer cache as transactions are accessing the contents(还在用的page不能丢出buffer)
+- unfix(pageid)
+  - The page is not in use by the transaction and can be evicted as far as the unfix calling transaction is concerned. ( We need to check to see that no one else wants the page before it can be evicted)（没被用的page）
+
+- Force write to disk at commit?
+  - Poor response time.
+  - But provides durability.
+- NO Force leave pages in memory as long as possible even after commit without modifying the data on the disk.（不强制把commit的存入disk会给Durability增加难度）
+  - Improves response time and efficiency as many reads and updates can take place in main memory rather than on disk.
+  - Durability becomes a problem as update may be lost if a crash occurs
+  - Write as little as possible, in a convenient place, at commit time, to support REDOing modifications.
+- Steal buffer-pool frames from uncommitted Xacts?（没有commit就存到disk会给Atomicity增加难度）
+  - To steal frame F:  Current page in F (say P) is written to disk; some Xact holds lock on P.
+  - If not, poor throughput.
+  - If so, how can we ensure atomicity?
+
+### Logging
+
+#### The **Write-Ahead Logging** （WAL） Protocol
+
+- Must force the log record which has both old and new values for an update before the corresponding data page gets to disk (stolen).
+- Must write all log records to disk (force) for a Xact before commit.
+- guarantees Atomicity because we can undo updates performed by aborted transactions and redo those updates of committed transactions.
+- guarantees Durability. Exactly how is logging (and recovery!) done.
+
+#### WAL log
+
+- Each log record has a unique Log Sequence Number (LSN).
+  - LSNs always increasing.
+- Each data page contains a pageLSN.
+  - The LSN of the most recent log record for an update to that page.
+- System keeps track of flushedLSN.
+  - The max LSN flushed so far.
+- WAL: Before a page is written to disk make sure pageLSN <= flushedLSN
+
+#### Log, Transaction and Dirty Page tables
+
+Dirty page table的LSN是最早修改这个page的LSN  
+Transaction table的LSN是transaction对应的最新LSN  
+PrevLSN: previous LSN, RecLSN: Record LSN
+![logtransaction](pic/logtransactiondirty.png)
+
+### Checkpoint
+
+Periodically, the DBMS creates a checkpoint, in order to minimize the time taken to recover in the event of a system crash.
+
+- Begin checkpoint record:  Indicates when chkpt began.
+- End checkpoint record:  Contains current Xact table and dirty page table.  This is a `fuzzy checkpoint’:
+  - Other Xacts continue to run; so these tables accurate only as of the time of the begin checkpoint record.
+  - No attempt to force dirty pages to disk; effectiveness of checkpoint is limited by the oldest unwritten change to a dirty page. (So it’s a good idea to periodically flush dirty pages to disk!)
+- Store LSN of chkpt record in a safe place (master record).
+
+### Simple Transaction Abort
+
+“play back” the log in reverse order, UNDOing updates.
+
+- Get lastLSN of Xact from Xact table.
+- Can follow chain of log records backward via the prevLSN field.
+- Before starting UNDO, write an Abort log record.
+  -For recovering from crash during UNDO!
+- Before restoring old value of a page, write a CLR (Compensation Log Record):
+You continue logging while you UNDO!!
+- CLR has one extra field: undonextLSN
+- Points to the next LSN to undo (i.e. the prevLSN of the record we’re currently undoing).
+- CLRs never Undone (but they might be Redone when repeating history: guarantees Atomicity!)
+- At end of UNDO, write an “end” log record.
+
+![abort](pic/Abort.png)
+
+
+
+
+
+
+
 
 ## 10th Week
 
