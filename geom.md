@@ -4,9 +4,185 @@
 
 ## Week 2
 
+### Properties of spatial raster data
+
+- Granularity
+  - “resolution”
+  - raster element size (geometric)
+  - scale / number of classes (thematic)
+
+- Accuracy
+  - “closeness to truth”:
+  - raster coordinates vs feature location
+  - raster integral vs feature size
+  - raster value vs feature type/field property
+
+- Meaning
+  - coordinates, datum, projection
+  - theme
+  - units of geometric and thematic variables
+
+- Value
+  - economic value (for a decision)
+  - price
+  - ownership / usage rights
+  - age
+
+### Interpolation
+
+- nearest(最近点的值)
+- neighbour linear(值乘对角权重)
+  - $V_{xy} = f(v_{00},v_{10},v_{01},v_{11}) = (1-x)(1-y)v_{00}+(x)(1-y)v_{10}+(1-x)(y)v_{01}+(x)(y)v_{11}$
+- cubic
+
+#### Contour line interpolation
+
+![contourline](pic/contourline.png)
+
+### Scale
+
+= nominal(不可比较只有标签)  
+<, =, > ordinal(只能比大小)  
+<, =, >, – interval(定距变量，差值有意义)  
+<, =, >, –, / ratio(定比变量，可以计算比例)
+
+### Map algebra
+
+#### Operations
+
+- Local operations: consider multiple criteria
+- Focal operations: smoothing, derivation
+- Zonal operations: The value derived at a location is an aggregate of values of an input field, computed over a zone
+- Global operations: The value at a location depends on all other values in the input raster
+
+#### Slope in digital elevation model(DEM)
+
+- Gradient: 与平面的角
+- Aspect: 坡向, 和北方的夹角
+
+![aspect](pic/aspect.png)
+![gradient](pic/gradient.png)
+
+### Raster pyramid
+
+- Image pyramids (from computer vision)
+- Web map caches
+- Region quadtrees(黑白灰)
+  - Morton order (z) of indexing
+  - fractal, space-filling curve
+  - depth at most n for tessellation of $2^n \times 2^n$
+
 ## Week 3
 
+### Polygon
+
+**Jordan’s curve theorem**: A simple closed curve separates an interior from the exterior.
+
+- Polylines
+- Convex polygons
+- Concave polygons
+
+### Algorithm
+
+#### Properties of an algorithm
+
+- Correctness
+  - test, or proof
+- Efficiency
+  - measured in comparison to input length
+  - big-O notation: “order of complexity”
+- Robustness
+  - critical, especially with geometric operations
+
+#### Distance
+
+- Minkowski distance between points 𝑖𝑖 and 𝑗𝑗 in 2D
+  - $d_{ij} = ((x_i - x_j)^p+(y_i - y_j)^p)^{1/p}$
+- Manhattan distance
+  - $d_{ij} = \Delta x + \Delta y$
+- Euclidean distance
+  - $d_{ij} = \sqrt{\Delta x^2 + \Delta y^2}$
+- Chessboard distance
+  - $d_{ij} = max(\Delta x, \Delta y)$
+
+#### Centroid
+
+Could be out of polygon  
+
+$c_{xy} = \frac{\sum{xy_i}}{n}$
+
+#### Area of polygon
+
+- $2F = \sum{(y_i + y_{i+1})*(x_i-x_{i+1})}$
+- **Go counter-clockwise**(逆时针)
+- **Divide by two**
+
+#### Point relative to line
+
+![pointrelativetoline](pic/pointrelativetoline.png)  
+
+![pointrelative](pic/pointrelative.png)
+
+#### Point in polygon
+
+- triangulation
+  - If the point is inside of one of the triangles, then it is inside of the polygon
+- line sweep algorithm (parity check)
+  - If a ray intersects an odd number of times with the polygon the point must be inside (Jordan’s curve theorem)
+- sum of angles to polygon nodes
+  - If the sum of all angles from the point to the corners of the polygon (in the order of the horizon) is 360° then the point is inside the polygon
+
 ## Week 4
+
+### Tree: connected acyclic graph
+
+### Graph
+
+- Undirected graph
+  - unordered pairs of N
+- Directed graph
+  - ordered pairs of N
+- Complete graph
+  - a graph with E being a full set of pairs of N
+  - The complete graph with n nodes is denoted by $K_n$.
+- Bipartite graph
+  - nodes N can be partitioned into two subsets X and Y such that each edge of G connects a node of X to a node of Y
+- Planar graph
+  - graph that can be drawn in the plane in such a way that no two edges intersect
+
+#### Graph properties
+
+- Degree: 连线数量
+  - indegree: 指向的连线数
+  - outdegree: 向外的连线数
+- Walk: a connected sequence of edges
+- Path: a walk with no self-intersection
+- Cycle: a path with same start and destination node
+- **Hamiltonian cycle**: A cycle that visits each node of G **exactly once**. (访问每点)
+- **Eulerian tour**: A **closed walk** passing through each edge of G exactly once. (访问每条边一次)
+  - Only graphs of even node degrees are Eulerian
+  - A Eulerian tour may repeat nodes (self-intersect) but not edges.
+  - A Eulerian tour corresponds to a Hamiltonian cycle in the line graph L(G) of G.
+  - Not every graph has a Eulerian tour.
+- Line graph
+  - A line graph L of a graph G is a graph L(G) that represents the adjacency relations between edges of G
+
+#### Centrality
+
+- Degree centrality
+  - degree
+- Betweenness centrality
+  - the proportion of optimal paths in this graph that pass through n(通过点的最短路径条数除以所有路径)
+
+### Steiner
+
+Given a set nodes N, interconnect them by a graph of shortest length. Intermediate nodes (Steiner points) may be added during the process.
+
+**Rubber band**: All angles between incoming edges of a Steiner point are the same.
+
+In regular polygons, the lowest network length L for N > 5 is the circumference less one side
+
+![steiner](pic/steiner.png)
 
 ## Week 6
 
@@ -40,7 +216,7 @@ The convex hull of a set X of points in Euclidean space is the smallest convex s
 - 0-simplex: (0D) point
 - 1-simplex: (1D) straight line segment
   - convex hull of two 0-simplices
-- 2-simplex: (2D) triangle – the simplest polygon
+- 2-simplex: (2D) triangle   - the simplest polygon
   - convex hull of three 0-simplices in linear independent positions(线性独立)
 
 ### Simplicial complex(多种simplex组成)
