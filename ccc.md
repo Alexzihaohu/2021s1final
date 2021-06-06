@@ -300,9 +300,9 @@ $S = \alpha+N(1-\alpha)=N-\alpha(N-1)$
 
 ## Week 4
 
-High­performance computing (HPC) is any computer system whose architecture allows for above average performance. A system that is one of the most powerful in the world, but is poorly designed, could be a "supercomputer".
+**High­performance computing** (HPC) is any computer system whose architecture allows for above average performance. A system that is one of the most powerful in the world, but is poorly designed, could be a "supercomputer".
 
-Clustered computing is when two or more computers serve a single resource. This improves performance and provides redundancy; typically a collection of smaller computers strapped together with a high­speed local network
+**Clustered computing** is when two or more computers serve a single resource. This improves performance and provides redundancy; typically a collection of smaller computers strapped together with a high­speed local network
 
 ### Linux advantage
 
@@ -376,7 +376,7 @@ mpirun -np 8 python HappyCity1.py 使用 mpi 并行运行代码文件
 
 ## Week 5 Cloud and Automation
 
-Cloud computing is a model for enabling ubiquitous, convenient, on-demand network access to a shared pool of configurable computing resources (e.g., networks, servers, storage, applications, and services) that can be rapidly provisioned and released with minimal management effort or service provider interaction.
+**Cloud computing** is a model for enabling ubiquitous, convenient, on-demand network access to a shared pool of configurable computing resources (e.g., networks, servers, storage, applications, and services) that can be rapidly provisioned and released with minimal management effort or service provider interaction.
 
 ### Cloud Models
 
@@ -431,18 +431,19 @@ Cloud computing is a model for enabling ubiquitous, convenient, on-demand networ
   - How to decide (in real time?) what data can go to public cloud?
   - Is the public cloud compliant with PCI-DSS (Payment Card Industry   - Data Security Standard)?
 
-### XaaS
+### [XaaS](https://www.bmc.com/blogs/saas-vs-paas-vs-iaas-whats-the-difference-and-how-to-choose/)
+
 ![xaas](pic/xaas.png)
 
-- IaaS
+- IaaS: a form of cloud computing that provides virtualized computing resources over the internet.
   - AWS
   - Azure
   - Alibaba Cloud
-- PaaS
+- PaaS: hardware and software tools available over the internet.
   - Google App Engine
   - Heroku
   - OpenShift
-- SaaS
+- SaaS: software that's available via a third-party over the internet.
   - Gmail
   - Salesforce
   - Microsoft Office 365
@@ -527,6 +528,192 @@ packages
   - Jinja2 is a modern and designer-friendly templating language for Python, modelled after Django’s templates.
 
 ## Week 6 Service-oriented Architectures
+
+### Abbreviation
+
+- **SOA** Service-Oriented Architecture
+- **ROA** Resource-Oriented Architecture
+- **UML** Unified Modeling Language
+- **SOAP** Simple Object Access Protocol
+- **ReST** Representational State Transfer
+- **RPC** Remote Procedure Call
+- **WSDL** Web Services Description Language
+
+### (system) architecture
+
+- The way different software components are distributed on computers, and the way in which they interact with each other(系统架构就是不同软件组件在计算机上的分布方式以及它们彼此交互的方式)
+- Architectures are often difficult to describe in words, hence diagrams are often used.(UML)
+- A standard graphic way to describe architectures is through the Unified Modeling Language deployment diagram
+
+#### Why Service-oriented Architectures(SOA)
+
+- When an architecture is completely contained within the same machine, components can communicate directly, e.g. through function calls or object instantiations.
+- However, when components are distributed such a direct approach typically cannot be used (e.g. Assignment 2!)
+- Therefore, components (more properly, systems) have to interact in more loosely-coupled ways.
+- Services are often used for this. Typically combinations and commonality of services can be used to form a Service-oriented Architecture (SoA).
+
+#### SoA Core Goals
+
+- A set of externally facing services that a business wants to provide to external collaborators
+- An architectural pattern based on service providers, one or more brokers, and service requestors based on agreed service descriptions
+- A set of architectural principles, patterns and criteria that support modularity, encapsulation, loose coupling, separation of concerns, reuse and composability
+- A programming model complete with standards, tools and technologies that supports development and support of services (note that there can be many flavours of services)
+- A middleware solution optimized for service assembly, orchestration, monitoring, and management, e.g. as workflows.
+
+#### SoA Design Principles
+
+- **Standardized service contract**: Services adhere to a communications agreement, as defined collectively by one or more service-description documents.
+- **Service loose coupling**: Services maintain a relationship that minimizes dependencies and only requires that they maintain an awareness of each other.
+- **Service abstraction**: Beyond descriptions in the service contract, services hide logic from the outside world.
+- **Service reusability**: Logic is divided into services with the intention of promoting reuse.
+- **Service autonomy**: Services have control over the logic they encapsulate.
+- **Service statelessness**: Services minimize resource consumption by deferring the management of state information when necessary.
+- **Service discoverability**: Services are supplemented with communicative meta data by which they can be effectively discovered and interpreted.
+- **Service composability**: Services are effective composition participants, regardless of the size and complexity of the composition.
+- **Service granularity**: a design consideration to provide optimal scope at the right granular level of the business functionality in a service operation.
+- **Service normalization**: services are decomposed and/or consolidated to a level that minimizes redundancy, for performance optimization, access, and aggregation.
+- **Service optimization**: high-quality services that serve specific functions are generally preferable to general purpose low-quality ones.
+- **Service relevance**: functionality is presented at a level of granularity recognized by the user as a meaningful service.
+- **Service encapsulation**: many services are consolidated for use under a SOA and their inner workings hidden.
+- **Service location transparency**: the ability of a service consumer to invoke a service regardless of its actual location in the network.
+
+#### SOAP/WS vs ReST
+
+Two patterns to call services over HTTP
+
+- SOAP/WS is built upon the Remote Procedure Call paradigm
+  - a language independent function call that spans another system
+- ReST is centered around resources, and the way they can be manipulated (added, deleted, etc.) remotely
+- Actually ReST is more of a style to use HTTP than a separate protocol
+- SOAP/WS is a stack of protocols that covers every aspect of using a remote service, from service discovery, to service description, to the actual request/response
+- ReST makes use of the different HTTP Methods (GET, POST, PUT, DELETE, etc)
+
+### WSDL
+
+- The Web Services Description Language (WSDL) is an XMLbased interface description language that describes thefunctionality offered by a web service.
+- WSDL provides a machine-readable description of how the service can be called, what parameters it expects, and what results/data structures it returns:
+  - Definition – what it does
+  - Target Namespace – context for naming things
+  - Data Types – simple/complex data structures inputs/outputs
+  - Messages – messages and structures exchanged between client and server
+  - Port Type - encapsulate input/output messages into one logical operation
+  - Bindings - bind the operation to the particular port type
+  - Service - name given to the web service itself
+
+### REST
+
+"Representational State Transfer (ReST) is intended to evoke an image of how a well-designed Web application behaves: a network of web pages (a virtual state-machine), where the user progresses through an application by selecting links (state transitions), resulting in the 
+next page (representing the next state of the application) being transferred to the user and rendered for their use."
+
+1. Clients request Resource through Identifier (URL)
+2. Server/proxy sends representation of Resource
+3. This puts the client in a certain state.
+4. Representation contains URLs allowing navigation.
+5. Client follows URL to fetch another resource.
+6. This transitions client into yet another state.
+
+### Resource-Oriented Architecture(ROA)
+
+- A ROA is a way of turning a problem into a RESTful web 
+service: an arrangement of URIs, HTTP, and XML that works 
+like the rest of the Web
+- A resource is anything that’s important enough to be 
+referenced as a thing in itself.
+- If your users might
+  - want to create a hypertext link to it
+  - make or refute assertions about it
+  - retrieve or cache a representation of it
+  - include all or part of it by reference into another representation
+  - annotate it
+  - or perform other operations on it
+- ...then you should make it a resource.
+
+#### Mapping Actions to HTTP Method
+
+ACTION | HTTP METHOD
+----|----
+Create Resource | PUT to a new URI, POST to an existing URI
+Retrieve Resource | GET
+Update Resource | POST to an existing URI
+Delete Resource | DELETE
+
+- Common mistake: Always mapping PUT to Update and POST to create
+- PUT should be used when target resource url is known by the client
+- POST should be used when target resource URL is server generated.
+
+#### A Generic RoA Procedure
+
+1. Figure out the data set
+2. Split the data set into resources and for each kind of resource
+3. Name the resources with URIs
+4. Expose a subset of the uniform interface
+5. Design the representation(s) accepted from the client
+6. Design the representation(s) served to the client
+7. Integrate this resource into existing resources, using hypermedia links and forms
+8. Consider the typical course of events: what’s supposed to happen?
+9. Consider error conditions: what might go wrong?
+
+#### ReST Best Practices
+
+1. Keep your URIs short – and create URIs that don’t change.
+2. URIs should be opaque identifiers that are meant to be
+discovered by following hyperlinks, not constructed by the
+client.
+3. Use nouns, not verbs in URLs
+4. Make all HTTP GETs side-effect free. Doing so makes the
+request "safe".
+5. Use links in your responses to requests! Doing so
+connects your response with other data. It enables client
+applications to be "self-propelled". That is, the response
+itself contains info about "what's the next step to take".
+Contrast this to responses that do not contain links. Thus,
+the decision of "what's the next step to take" must be made
+out-of-band.
+6. Minimize the use of query strings.
+7. Use HTTP status codes to convey errors/success
+8. In general, keep the REST principles in mind
+   - Addressability
+   - Uniform Interface
+   - Resources and Representations instead of Remote Procedure Call RPC
+   - HATEOAS
+
+Uniform Interface(统一端口)
+
+- **Identification of Resources**: All important resources are identified by one (uniform) resource identifier mechanism (e.g. HTTP URL) 所有资源用统一的资源标识符
+- **Manipulation of Resources through representations**: Each resource can have one or more representations. Such as application/xml, application/json, text/html, etc. Clients and servers negotiate to select representation. 通过表示层操作资源
+- **Self-descriptive messages**: Requests and responses contain not only data but additional headers describing how the content should be handled. Such as if it should be cached, authentication requirements, etc. Access methods (actions) mean the same for all resources (universal semantics)自描述消息，请求和响应不仅仅包含数据，还包含描述应该如何处理内容的附加 header
+- **HATEOAS** – Hyper Media as the Engine of Application State
+  - Resource representations contain links to identified resources 资源表示层包含了找到资源的
+链接
+  - Resources and state can be used by navigating links 资源根据导航来连接
+    - links make interconnected resources navigable
+    - without navigation, identifying new resources is service-specific
+  - RESTful applications **navigate** instead of calling 导航而不是调用
+    - representations contain information about possible traversals
+    - application navigates to the next resource depending on link semantics
+    - navigation can be delegated since all links use identifiers
+
+Making Resources Navigable
+
+- Essential for using Hypermedia Driven Application State
+- RPC-oriented systems need to expose the available functions
+  - functions are essential for interacting with a service
+  - introspection or interface descriptions make functions discoverable 
+- ReSTful systems use a Uniform Interface
+  - no need to learn about functions
+  - but how to find resources?
+    - find them by following links from other resources
+    - learn about them by using URI Templates
+    - understand them by recognizing representations
+
+#### HTTP Methods
+
+- HTTP methods can be **Safe, Idempotent, Neither**
+- **Safe methods**: Do not change repeating a call is equivalent to not making a call at all.(多次和0次没区别)
+- **Idempotent methods**: Effect of repeating a call is equivalent to making a single call(多次和1次没区别)
+  - GET, OPTIONS, HEAD – Safe
+  - PUT, DELETE – Idempotent
+  - POST – Neither safe nor idempotent
 
 ## Week 7
 

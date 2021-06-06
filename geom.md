@@ -121,7 +121,7 @@ A datum enables to identify a location on the Earth by longitude and latitude
   - price
   - ownership / usage rights
   - age
-- two type
+- raster data: two type
   - area view
     - element: cell, value: integral over cell
   - grid view
@@ -130,6 +130,7 @@ A datum enables to identify a location on the Earth by longitude and latitude
 ### Interpolation
 
 - nearest(最近点的值)
+  - simply determines the “nearest” neighbouring pixel, and assumes the intensity value of it.
 - neighbour linear(值乘对角权重)
   - $V_{xy} = f(v_{00},v_{10},v_{01},v_{11}) = (1-x)(1-y)v_{00}+(x)(1-y)v_{10}+(1-x)(y)v_{01}+(x)(y)v_{11}$
 - cubic

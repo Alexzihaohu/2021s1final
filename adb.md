@@ -2,7 +2,7 @@
 
 ## 1st Week
 
-**Keywords: Disk access time, Memory access time, SSD, Moore's law, Joy's law, Database archtecture**
+### Keywords: Disk access time, Memory access time, SSD, Moore's law, Joy's law, Database archtecture
 
 ![avatar](./pic/disk.png)
 
@@ -37,8 +37,6 @@ H: hit ratio, C: cache access time, M: memory access time
 - Grid: Like distributed, but each node manages own resource; system doesn’t act as a single unit.
 - P2P: Like grid, but nodes can join and leave network at will (unlike Grid)
 - Cloud: Generalization of grid, but resources are accessed on demand.
-
-<hr>
 
 ## 2nd 3rd Week
 
@@ -108,7 +106,7 @@ Probability that the system fails with a particular module failing last: $P_{n-1
 
 Probability that a supermodule fails due to any one of the n modules failing last, when other (n-1) modules are unavailable $n*P_{n-1}*P_{i}$
 
-### Old master - new master technique 
+### Old master - new master technique
 
 - record all updates (transactions) to be performed in a separate file
 - at night (usually) produce a separate new (next day) master using the old (previous day’s) master and the batch updates (transactions).
@@ -134,18 +132,16 @@ Probability that a supermodule fails due to any one of the n modules failing las
    - **Bohrbugs**: deterministic bugs, relatively easy to handle
    - **Heisenbugs**: software errors that only appear occasionally
 3. Process pairing
-   - Primary process does all the work until it fails. The second process (backup) takes over the primary and continues. 
+   - Primary process does all the work until it fails. The second process (backup) takes over the primary and continues.
    - Primary needs to tell on a regular basis that it is alive and also transmit its state to the secondary.
    - three ways to takeover
      - Checkpoint-restart: The primary records its state on a second storage module. At takeover the secondary starts reading the state of the primary from the storage and resumes the application. (全记录)
      - Checkpoint messages: The primary sends its state changes as messages to the backup. At takeover the backup gets its current state from the most recent checkpoint message.（只记录改变）
      - Persistent: backup restarts in the null state and lets Transaction mechanism to clean up all uncommitted transactions. This is the approach taken by the most Database Systems.(现在最常用的)
 
-<hr>
-
 ## 4th 5th Week
 
-**Keywords: Communication, Transaction**
+### Keywords: Communication, Transaction
 
 ### Communication reliability
 
@@ -236,8 +232,6 @@ The main function of a TP monitor is to integrate other system components and ma
 #### TP monitor structure
 
 ![tpstructure](pic/tpstructure.png)
-
-<hr>
 
 ## 6th Week
 
@@ -496,7 +490,7 @@ You continue logging while you UNDO!!
 - All log records up to Xact’s lastLSN are flushed.
   - Guarantees that flushedLSN $\geq$ lastLSN.
   - Note that log flushes are sequential, synchronous writes to disk     - (very fast writes to disk).
-  - Many log records per log page     - (very efficient due to multiple writes). 
+  - Many log records per log page     - (very efficient due to multiple writes).
 - Commit() returns.
 - Write end record to log.
 
@@ -647,4 +641,3 @@ of the three desirable properties, C, A or P
   - Columnar databases are a hybrid of RDBMSs and Key Value stores
   - Values are stored in groups of zero or more columns, but in Column-Order
   - Values are queried by matching keys
-
