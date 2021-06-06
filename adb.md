@@ -48,7 +48,7 @@ H: hit ratio, C: cache access time, M: memory access time
 ### ACID  
 
 - Atomicity: A transaction’s changes to the state (Database) are atomic implying either all actions happen or none happen.
-- Consistency: Transaction are a correct transformation of the state. Actions taken as a whole by a transaction do not violate the integrity of the application state. That is we are assuming transactions are correct programs. Concurrent execution of transactions does not violate consistency of data. Data is in a ‘consistent’ state when a transaction starts and when it ends – in other words, any data written to the database must be valid according to all defined rules
+- Consistency: Transaction are a correct transformation of the state. Actions taken as a whole by a transaction do not violate the integrity of the application state. That is we are assuming transactions are correct programs. Concurrent execution of transactions does not violate consistency of data. Data is in a ‘consistent’ state when a transaction starts and when it ends     - in other words, any data written to the database must be valid according to all defined rules
 - Isolation: Transaction are executed as if it is the only one in the system. Even when several transactions are executed simultaneously, it appears to each transaction T that others executed either happen before T or after T but not at the same time.
 - Durability: State changes committed by a transaction survive failures. The system should tolerate system failures and any committed updates should not be lost.
 
@@ -265,7 +265,7 @@ To resolve conflicts and preserve database consistency
   - do not use busy waiting and therefore more effective
 - **Spin locks**(访问之前查看上锁状态)
   - using atomic lock/unlock instructions such as **test and set** or **compare and swap**
-  - need hardware support – should be able to lock bus (communication channel between CPU and memory + any other devices) for two memory cycles (one for reading and one for writing). During this time no other devices’ access is allowed to this memory location.
+  - need hardware support     - should be able to lock bus (communication channel between CPU and memory + any other devices) for two memory cycles (one for reading and one for writing). During this time no other devices’ access is allowed to this memory location.
   - algorithm does not depend on number of processes
   - are very efficient for low lock contentionsv (all DB systems use them)
   - use busy waiting
@@ -397,7 +397,7 @@ To acquire an X, U, SIX, or IX mode lock on a non-root node, all parents must be
 
 When conflicts are rare, transactions can execute operations without managing locks and without waiting for locks - higher throughput
 
-- Before committing, each transaction verifies that no other transaction has modified the data – duration of locks are very short(在做update的时候先检查一下用到的值始否改变了)
+- Before committing, each transaction verifies that no other transaction has modified the data     - duration of locks are very short(在做update的时候先检查一下用到的值始否改变了)
 - If any conflict found, the transaction repeats the attempt
 - If no conflict, make changes and commit
 
@@ -405,14 +405,14 @@ When conflicts are rare, transactions can execute operations without managing lo
 
 Do not guarantee Serializability. However, its transaction throughput is very high compared to two phase locking scheme.
 
-## 9th Week
+## 9th 10th Week
 
 ### Buffer Caches
 
 - Data is stored on disks(数据存在disk上)
 - Reading a data item requires reading the whole page of data (typically 4K or 8K bytes of data depending on the page size) from disk to memory containing the item.(读数据胡需要把数据从disk读到memory)
 - Modifying a data item requires reading the whole page from disk to memory containing the item, modifying the item in memory and writing the whole page to disk.(修改数据需要把所有的数据从memory存回disk)
-- Steps 2 & 3 can be very expensive and we can minimize the number of disk reads and writes by storing as many disk pages as possible in memory (buffer cache) – this means always check in buffer cache for the disk page of interest if not copy the associated page to buffer cache and perform the  necessary operation.(存读的过程很贵，尽可能多的把数据读到memory上就不要动)
+- Steps 2 & 3 can be very expensive and we can minimize the number of disk reads and writes by storing as many disk pages as possible in memory (buffer cache)     - this means always check in buffer cache for the disk page of interest if not copy the associated page to buffer cache and perform the  necessary operation.(存读的过程很贵，尽可能多的把数据读到memory上就不要动)
 - When buffer cache is full we need to evict some pages from the buffer cache in order fetch the required pages from the disk.(buffer满了之后要释放一些page到disk)
 - Eviction needs to make sure that no one else is using the page and any modified pages should be copied to the disk.(释放的时候要确保没人要用这些page)
 - Since several transactions are executing concurrently this requires additional locking procedures using latches. These latches are used only for the duration of the operation (e.g. READ/WRITE) and can be released immediately unlike record locks which have to be kept locked until the end of the transaction.(使用latch, 类似于lock, 来保证读写的过程)
@@ -442,6 +442,9 @@ Do not guarantee Serializability. However, its transaction throughput is very hi
 - Must write all log records to disk (force) for a Xact before commit.
 - guarantees Atomicity because we can undo updates performed by aborted transactions and redo those updates of committed transactions.
 - guarantees Durability. Exactly how is logging (and recovery!) done.
+- Use WAL to allow STEAL/NO-FORCE with out sacrificing correctness.
+- LSNs identify log records; linked into backwards chains per transaction (via prevLSN).
+- pageLSN allows comparison of data page and log records.
 
 #### WAL log
 
@@ -487,13 +490,161 @@ You continue logging while you UNDO!!
 
 ![abort](pic/Abort.png)
 
+### Transaction commit
 
+- Write commit record to log.
+- All log records up to Xact’s lastLSN are flushed.
+  - Guarantees that flushedLSN $\geq$ lastLSN.
+  - Note that log flushes are sequential, synchronous writes to disk     - (very fast writes to disk).
+  - Many log records per log page     - (very efficient due to multiple writes). 
+- Commit() returns.
+- Write end record to log.
 
+### Crash Recovery
 
+#### Analysis
 
+Figure out which Xacts committed since checkpoint, which failed
 
+- Reconstruct state at checkpoint.
+  - via end_checkpoint record.
+- Scan log forward from checkpoint.
+  - End record: Remove Xact from Xact table.(log里面commit的transaction从transaction table删了)
+  - Other records: Add Xact to Xact table, set lastLSN=LSN, change Xact status on commit.(log里的transaction添加到transaction table)
+  - Update record: If P not in Dirty Page Table, Add P to D.P.T., set its recLSN=LSN.(把page加到Dirty page table)
 
+#### REDO
 
-## 10th Week
+Repeat History to reconstruct state at crash:  
+Reapply all updates (even of aborted Xacts!), redo CLRs.
+
+- Scan forward from log rec containing smallest recLSN in D.P.T. For each CLR or update log rec LSN, REDO the action unless:(重复log里的操作除了)
+  - Affected page is not in the Dirty Page Table(在crash发生前已经evict了)
+  - Affected page is in D.P.T., but has recLSN > LSN(已经evict了, 但是又load到了buffer里面)
+  - pageLSN (in DB) $\geq$ LSN.(已经durable了, 有最新的变化)
+- To REDO an action:
+  - Reapply logged action.
+  - Set pageLSN to LSN.  No additional logging!
+
+#### UNDO
+
+Remove effect of failed transactions.
+
+- ToUndo={ l | l is a lastLSN of a “loser” Xact}从transaction table生成
+- Repeat
+  - Choose the largest LSN among ToUndo.
+  - If this LSN is a CLR and undonextLSN==NULL
+    - Write an End record for this Xact.
+  - If this LSN is a CLR, and undonextLSN != NULL
+    - Add undonextLSN to ToUndo
+    - (Q: what happens to other CLRs?)
+  - Else this LSN is an update.  Undo the update, write a CLR, add prevLSN to ToUndo.
+- Until ToUndo is empty.
+
+### Atomicity in Distributed Transaction Processing
+
+The two-phase commit protocol (2PC) can help achieve atomicity in distributed transaction processing
+
+![distributedtransaction](pic/distributedtransaction.png)
 
 ## 11th Week
+
+### CAP theorem
+
+- CAP theorem
+  - Any distributed database with shared data, can have at most two
+of the three desirable properties, C, A or P
+
+- CAP
+  - **Consistency**: every node always sees the same data at any given instance (i.e., strict consistency)
+  - **Availability**: the system continues to operate, even if nodes crash, or some hardware or software parts are down due to upgrades
+  - **Partition Tolerance**: the system continues to operate in the presence of network partitions
+
+- Trade off
+  - Availability + Partition Tolerance forfeit Consistency as changes in place cannot be propagated when the system is portioned.(单节点上改变不能保证所有节点上一致)
+  - Consistency + Partition Tolerance entails that one side of the partition must act as if it is unavailable, thus forfeiting Availability(所有节点上一致导致有时候数据短时间内不能获取到)
+  - Consistency + Availability is only possible if there is no network partition, thereby forfeiting Partition Tolerance(没有节点分区以保证一致性和可获取)
+
+- Types of Consistency
+  - Strong Consistency(统一返回更新的值)
+    - After the update completes, any subsequent access will return the same updated value.
+  - Weak Consistency(不一定返回更新的值)
+    - It is not guaranteed that subsequent accesses will return the updated value.
+  - Eventual Consistency(如果没有额外的更新，最终会返回更新的值)
+    - Specific form of weak consistency
+    - It is guaranteed that if no new updates are made to object, eventually all accesses will return the last updated value
+
+- **Eventual Consistency Variations**
+  - Causal consistency
+    - Processes that have causal relationship will see consistent data(如果Process A通知Process B它已经更新了数据，那么Process B的后续读取操作则读取A写入的最新值，而与A没有因果关系的C则可以最终一致性)
+  - **Read-your-write consistency**
+    - A process always accesses the data item after it’s update operation and never sees an older value(process对某个值更新后就看不到旧的)
+  - Session consistency
+    - As long as session exists, system guarantees read-your-write consistency
+    - Guarantees do not overlap sessions(单个session内的consistency保证)
+  - **Monotonic read consistency**
+    - If a process has seen a particular value of data item, any subsequent processes will never return any previous values(看到了新的就看不到旧的)
+  - Monotonic write consistency
+    - The system guarantees to serialize the writes by the same process(保证系统会序列化执行一个Process中的所有写操作)
+  - 实践中会结合不同的consistency
+- Dynamic tradeoff between C and A
+  - 当航班还很充足侧重于avaliable
+  - 当航班数很少侧重于consistency
+- Heterogeneity: Segmenting C and A(不同的部分侧重的方向不同)
+  - No single uniform requirement
+    - Some aspects require strong consistency
+    - Others require high availability
+  - Segment the system into different components
+    - Each provides different types of guarantees
+  - Overall guarantees neither consistency nor availability
+    - Each part of the service gets exactly what it needs
+  - Can be partitioned along different dimensions
+  - Data Partition
+    - Different data may require different consistency and availability
+
+### No partition
+
+- Tradeoff between Consistency and Latency:
+- Caused by the possibility of failure in distributed systems
+  - High availability -> replicate data -> consistency problem
+- Basic idea:
+  - Availability and latency are arguably the same thing: **unavailable -> extreme high latency**
+  - Achieving different levels of consistency/availability takes different amount of time
+- Maintaining consistency should balance between the strictness of consistency versus availability/scalability
+
+### BASE properties
+
+- CAP can not granted at the same time result in databases with relaxed ACID guarantees
+- In particular, such databases apply the BASE properties:
+  - Basically Available: the system guarantees Availability
+  - Soft-State: the state of the system may change over time
+  - Eventual Consistency: the system will eventually become consistent
+- PACLE
+  - If there is a partition (P), how does the system trade off availability and consistency (A and C); else (E), when the system is running normally in the absence of partitions, how does the system trade off latency (L) and consistency (C)?
+- Example
+  - PA/EL Systems: Give up both Cs for availability and lower latency
+    - Dynamo, Cassandra, Riak
+  - PC/EC Systems: Refuse to give up consistency and pay the cost of availability and latency
+    - BigTable, Hbase, VoltDB/H-Store
+  - PA/EC Systems: Give up consistency when a partition happens and keep consistency in normal operations
+    - MongoDB
+  - PC/EL System: Keep consistency if a partition occurs but gives up consistency for latency in normal operations
+    - Yahoo! PNUTS
+
+### NoSQL
+
+- **Document Stores**(Mongodb, CouchDB)
+  - Documents are stored in some standard format or encoding
+  - Documents can be indexed
+- **Graph database**(Neo4j)
+  - Data are represented as vertices and edges
+  - Graph databases are powerful for graph-like queries
+- **Key-value database**(Amazon DynamoDB and Apache Cassandra)
+  - Keys are mapped to (possibly) more complex value
+  - Keys can be stored in a hash table and can be distributed easily
+  - Such stores typically support regular CRUD (create, read, update, and delete) operations(没办法join和aggregate)
+- **Columnar database**(HBase and Vertica)
+  - Columnar databases are a hybrid of RDBMSs and Key Value stores
+  - Values are stored in groups of zero or more columns, but in Column-Order
+  - Values are queried by matching keys
+

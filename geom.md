@@ -121,6 +121,11 @@ A datum enables to identify a location on the Earth by longitude and latitude
   - price
   - ownership / usage rights
   - age
+- two type
+  - area view
+    - element: cell, value: integral over cell
+  - grid view
+    - element: point, value: opint observation
 
 ### Interpolation
 
@@ -137,8 +142,8 @@ A datum enables to identify a location on the Earth by longitude and latitude
 
 = nominal(不可比较只有标签)  
 <, =, > ordinal(只能比大小)  
-<, =, >, – interval(定距变量，差值有意义)  
-<, =, >, –, / ratio(定比变量，可以计算比例)
+<, =, >,     - interval(定距变量，差值有意义)  
+<, =, >,     -, / ratio(定比变量，可以计算比例)
 
 ### Map algebra
 
@@ -260,6 +265,27 @@ $c_{xy} = \frac{\sum{xy_i}}{n}$
   - Not every graph has a Eulerian tour.
 - Line graph
   - A line graph L of a graph G is a graph L(G) that represents the adjacency relations between edges of G
+
+### Search for optimal path
+
+- Types of optimal path problems
+  - from a single source to a single destination
+    - pathfinding
+  - from a single source to all other nodes
+    - spanning tree
+  - from all vertices to all other nodes
+    - distance matrix
+- Algorithms:
+  - Dijkstra’s shortest path algorithm
+    - node expansion strategy from source node
+  - A* algorithm
+    - node expansion with a preferred direction
+  - k-shortest path algorithms
+    - variants with or without cycles, and without overlap
+- Related:
+  - Optimal cycles (travelling salesperson problem)
+  - Optimal connection between nodes
+    - network construction; Steiner problem
 
 #### Centrality
 
@@ -530,6 +556,10 @@ In spatial information, a trajectory is observed and represented by a discrete s
 
 **Qualitative spatial reasoning**: 给定 AB，BC的关系，推断AC的关系（In many cases reasoning is ambiguous.）  
 
+### Relations between time intervals
+
+![relation](pic/timeinterval.png)
+
 ### Topological relations of regions
 
 i: interior, e: exterior, b: boundary  
@@ -660,7 +690,7 @@ If a function 𝑥(𝑡) contains no frequencies higher than 𝑓 Hz, it is comp
 
 - Cost-benefit ratio smaller than 1.
 - Graph of accumulating costs and benefits should show a break-even (in a reasonable time frame)
-  - Break even: Point in time where benefits equal costs (return of investment)
+  - Break-even: Point in time where benefits equal costs (return of investment)
 
 **Expectations**:
 
