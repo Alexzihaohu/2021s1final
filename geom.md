@@ -2,6 +2,100 @@
 
 ## Week 1
 
+### Spacial quality
+
+- Granularity: level of detail
+- Accuracy: closeness to truth
+- Provenance: validation of information
+
+### Abstraction
+
+- Earth surface (actual topography)
+- Geoid (equipotential surface)大地水准面
+- Ellipsoid (with a chosen datum)
+- Spheroid (even simpler than an ellipsoid)
+
+Null meridian: ellipsis through Greenwish
+
+### Datum
+
+A datum enables to identify a location on the Earth by longitude and latitude
+
+- an ellipsoid
+- a centre point
+- a null meridian
+
+### Projection
+
+- True projections preserve at least one aspect
+  - distance (“equidistant projection”)
+  - area (“equivalent projection”)
+  - direction (“conformal projection”)
+- True projections have special properties
+  - meridians are straight lines and intersect in the poles
+  - lateral circles are concentric circles around the poles
+  - all lines intersect rectangularly
+- 投影方向
+  - Azimuthal projections
+  - Cylindrical projections
+  - Conic projections
+- Mercator
+  - Normal Mercator(竖圆柱)
+  - Transverse Mercator(横圆柱)
+  - Universal Transversal Mercator (secant cylinders)
+    - 分60块一块6° Longitude
+    - 84° N Latitude to 80° S Latitude
+- Spherical Mercator projection of (ellipsoidal) geographic coordinates(网络地图)
+  - Square world map; easy to tile
+  - Neither strictly spherical, nor strictly ellipsoidal
+  - Hence, not exactly conformal
+  - Not admitted for any official use
+
+![mercator](pic/mercator.png)
+
+### Map
+
+- Definition
+  - a representation of the earth’s surface (or a part of it)
+  - at a point of time
+  - projected to the plane
+  - scaled (down)
+  - simplified (generalized)
+  - labelled or commented
+- Not a map
+  - globes
+  - aerial / satellite images
+  - panoramic views
+  - sketches
+- Map design principle
+  - harmony
+  - composition / balance
+  - clarity
+  - level of abstraction
+- Essential elements
+  - title (→ purpose)
+  - legend
+  - spatial reference frame
+  - north arrow
+  - production information
+- Cartographic generalization
+  - Elimination
+  - Simplification
+  - Aggregation
+  - Size reduction
+  - Typification
+  - Exaggeration
+  - Classification
+  - Displacement
+  - Refinement
+- Graphic variables
+  - Size
+  - Density
+  - colour
+  - shape
+  - texture
+  - orientation
+
 ## Week 2
 
 ### Properties of spatial raster data
