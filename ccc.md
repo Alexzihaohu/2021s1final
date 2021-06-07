@@ -62,8 +62,6 @@ From computer-computer focus to organisation-organisation focus
 - Job scheduling/resource brokering: Fastest, most secure/reliable, cheapest
 - Virtual organisation support: Security, Public Key Infrastructures
 
-## Week 2
-
 ## Week 3 parallelization
 
 ### Compute Scaling
@@ -588,14 +586,14 @@ Two patterns to call services over HTTP
 - SOAP/WS is a stack of protocols that covers every aspect of using a remote service, from service discovery, to service description, to the actual request/response
 - ReST makes use of the different HTTP Methods (GET, POST, PUT, DELETE, etc)
 
-### WSDL
+### WSDL(Web Services Description Language)
 
-- The Web Services Description Language (WSDL) is an XMLbased interface description language that describes thefunctionality offered by a web service.
+- The Web Services Description Language (WSDL) is an XML-based interface description language that describes thefunctionality offered by a web service.
 - WSDL provides a machine-readable description of how the service can be called, what parameters it expects, and what results/data structures it returns:
-  - Definition – what it does
-  - Target Namespace – context for naming things
-  - Data Types – simple/complex data structures inputs/outputs
-  - Messages – messages and structures exchanged between client and server
+  - Definition   - what it does
+  - Target Namespace   - context for naming things
+  - Data Types   - simple/complex data structures inputs/outputs
+  - Messages   - messages and structures exchanged between client and server
   - Port Type - encapsulate input/output messages into one logical operation
   - Bindings - bind the operation to the particular port type
   - Service - name given to the web service itself
@@ -655,7 +653,7 @@ Delete Resource | DELETE
 
 #### ReST Best Practices
 
-1. Keep your URIs short – and create URIs that don’t change.
+1. Keep your URIs short   - and create URIs that don’t change.
 2. URIs should be opaque identifiers that are meant to be
 discovered by following hyperlinks, not constructed by the
 client.
@@ -682,7 +680,7 @@ Uniform Interface(统一端口)
 - **Identification of Resources**: All important resources are identified by one (uniform) resource identifier mechanism (e.g. HTTP URL) 所有资源用统一的资源标识符
 - **Manipulation of Resources through representations**: Each resource can have one or more representations. Such as application/xml, application/json, text/html, etc. Clients and servers negotiate to select representation. 通过表示层操作资源
 - **Self-descriptive messages**: Requests and responses contain not only data but additional headers describing how the content should be handled. Such as if it should be cached, authentication requirements, etc. Access methods (actions) mean the same for all resources (universal semantics)自描述消息，请求和响应不仅仅包含数据，还包含描述应该如何处理内容的附加 header
-- **HATEOAS** – Hyper Media as the Engine of Application State
+- **HATEOAS**   - Hyper Media as the Engine of Application State
   - Resource representations contain links to identified resources 资源表示层包含了找到资源的
 链接
   - Resources and state can be used by navigating links 资源根据导航来连接
@@ -711,16 +709,548 @@ Making Resources Navigable
 - HTTP methods can be **Safe, Idempotent, Neither**
 - **Safe methods**: Do not change repeating a call is equivalent to not making a call at all.(多次和0次没区别)
 - **Idempotent methods**: Effect of repeating a call is equivalent to making a single call(多次和1次没区别)
-  - GET, OPTIONS, HEAD – Safe
-  - PUT, DELETE – Idempotent
-  - POST – Neither safe nor idempotent
+  - GET, OPTIONS, HEAD   - Safe
+  - PUT, DELETE   - Idempotent
+  - POST   - Neither safe nor idempotent
 
-## Week 7
+## Week 7 Big Data and CouchDB
 
-## Week 8
+### 4 "Vs"
 
-## Week 9
+- **Volume**: yes, volume (Giga, Tera, Peta, …) is a criteria, but not the only one
+- **Velocity**: the frequency of new data is being brought into the system and analytics performed
+- **Variety**: the variability and complexity of data schema. The more complex the data schema(s) you have, the higher the probability of them changing along the way, adding more complexity.
+- **Veracity**: the level of trust in data accuracy (provenance); the more diverse sources you have, the more unstructured they are, the less veracity you have.
+
+### Ad hoc Solution(为啥不用rdb而要用nosql)
+
+- While Relational DBMSs are extremely good at ensuring consistency, they rely on normalized data models that, in a world of big data (think about Veracity and Variety) can no longer be taken for granted.
+- Therefore, it makes sense to use DBMSs that are built upon data models that are not relational (relational model: tables, columns and relationships amongst tables -that is, relational algebra).
+- While there is nothing preventing SQL to be used in distributed environments, alternative query languages have been used for distributed DBMSs, hence they are sometimes called NoSQL DBMSs
+
+### DBMSs for Distributed Environments分为三类
+
+- A key-value store is a DBMS that allows the retrieval of a chunk of data given a key: fast, but crude (e.g. Redis, RocksDB, Berkeley DB)
+- A BigTable DBMS stores data in columns grouped into column families, with rows potentially containing different columns of the same family (e.g. Apache Cassandra, Apache Accumulo)
+- A Document-oriented DBMS stores data as structured documents, usually expressed as XML or JSON (e.g. Apache CouchDB, MongoDB)
+
+### A Tale of Two Clusters
+
+- Distributed databases are run over “clusters”, that is, sets of connected computers
+- Clusters are needed to:
+  - Distribute the computing load over multiple computers to improve **availability**
+  - Storing multiple copies of data to achieve **redundancy**
+- Consider two document-oriented DBMSs (CouchDB and MongoDB) and their typical cluster architectures
+
+![couchdbmangodb](pic/couchdbmangodb.png)
+
+#### CouchDB Cluster Architecture
+
+- All nodes answer requests (read or write) at the same time
+- Sharding (splitting of data across nodes) is done on every node
+- When a node does not contain a document (say, a document of Shard A is requested to Node 2), the node requests it from another node (say, Node 1) and returns it to the client
+- Nodes can be added/removed easily, and their shards are re-balanced automatically upon addition/deletion of nodes
+- In this example there are 3 nodes, 4 shards and a replica number of 2
+
+#### MongoDB Cluster Architecture
+
+- Sharding (splitting of data) is done at the replica set level, hence it involves more than one cluster (a shard is on top of a replica set)
+- Only the primary node in a replica set answers write requests, but read requests can (depending on the specifics of the configuration) be answered by every node (including secondary nodes) in the set
+- Updates flow only from the primary to the secondary
+- If a primary node fails, or discovers it is connected to a minority of nodes, a secondary of the same replica set is elected as the primary
+- Arbiters (MongoDB instances without data) can assist in breaking a tie in elections.
+- Data are balanced across replica sets
+- Since a quorum has to be reached, it is better to have an odd number of voting members
+
+### Brewer’s CAP Theorem
+
+- CAP
+  - **Consistency**: every client receiving an answer receives the same answer from all nodes in the cluster
+  - **Availability**: every client receives an answer from any node in the cluster
+  - **Partition-tolerance**: the cluster keeps on operating when one or more nodes cannot communicate with the rest of the cluster
+- While the theorem shows all three qualities are symmetrical, Consistency and Availability are at odds only when a Partition happens
+- “Hard” network partitions may be rare, but “soft” ones are not (a slow node may be considered dead even if it is not); ultimately, every partition is detected by a timeout
+- Can have consequences that impact the cluster as a whole, e.g. a distributed join is only complete when all sub-queries return
+- Traditional DBMS architectures were not concerned with network partitions, since all data were supposed to be in a small, co-located cluster of servers
+- The emphasis on numerous commodity servers, can result in an increased number of hardware failures
+- The CAP theorem forces us to consider trade-offs among different options
+
+#### Consistency and Availability: Two phase commit
+
+This is the usual algorithm used in relational DBMS's (and MongoDB, to same extent), it enforces consistency by:
+
+- locking data that are within the transaction scope
+- performing transactions on write-ahead logs
+- completing transactions (commit) only when all nodes in the cluster have performed the transaction
+- aborts transactions (rollback) when a partition is detected
+  - This procedure entails the following:
+  - reduced availability (data lock, stop in case of partition)
+  - enforced consistency (every database is in a consistent state, and all are left in the same state)
+- Therefore, two-phase commit is a good solution when the cluster is co-located, less so when it is distributed
+
+#### Consistency and Partition-Tolerance: Paxos
+
+- This family of algorithms is driven by consensus, and is both partition-tolerant and consistent
+- In Paxos, every node is either a proposer or an accepter
+  - a proposer proposes a value (with a timestamp)
+  - an accepter can accept or refuse it (e.g. if the accepter receives a more recent value)
+- When a proposer has received a sufficient number of acceptances (a quorum is reached), and a confirmation message is sent to the accepters with the agreed value
+- Paxos clusters can recover from partitions and maintain consistency, but the smaller part of a partition (the part that is not in the quorum) will not send responses to clients, hence the availability is reduced
+- Raft is a similar, but simpler algorithm solving the same problem
+
+#### Availability and Partition-tolerance: Multi-Version Concurrency Control (MVCC)
+
+- MVCC is a method to ensure availability (every node in a cluster always accepts requests), and some sort of recovery from a partition by reconciling the single databases with revisions (data are not replaced, they are just given a new revision number)
+- In MVCC, concurrent updates are possible without distributed locks (in optimistic locking only the local copy of the object is locked), since the updates have different revision numbers; the transaction that completes last will get a higher revision number, hence will be considered as the current value.
+- In case of cluster partition and concurrent requests with the same revision number going to two partitioned nodes, both are accepted, but once the partition is solved, there would be a conflict... a conflict that would have to be solved somehow (CouchDB returns a list of all current conflicts, which are then left to be solved by the application). Think of it a something similar to a software revision control system such as Git
+
+#### MongoDB vs CouchDB Clusters
+
+- MongoDB clusters are considerably more complex than CouchDB ones
+- MongoDB clusters are less available, as only primary nodes can talk to clients for read operations, (and exclusively so for write operations)
+- MongoDB software routers (MongoS) must be embedded in application servers, while any HTTP client can connect to CouchDB
+- Losing two nodes out of three in the CouchDB architecture shown, means losing access to between one/quarter and half the data, depending on the nodes that fail
+- Depending on the cluster configuration parameters and the nature (primary or secondary) of the lost nodes, losing two nodes in the MongoDB example may imply losing write access to half the data (although there are ten nodes in the cluster instead of three), and possibly read access too, These differences are rooted in different approaches to an unsolvable problem, a problem defined by Brewer’s CAP Theorem
+- While CouchDB uses MVCC, MongoDB uses a mix of two-phase commit (for replicating data from primary to secondary nodes) and Paxos-like (to elect a primary node in a replica-set)
+- A network partition may segregate a primary into a partition with a minority of nodes. When the primary detects that it can only see a minority of nodes in the replica set, the primary steps down as primary and becomes a secondary. Independently, a member in the partition that can communicate with a majority of the nodes (including itself) holds an election to become the new primary.
+- The different choices of strategies explains the different cluster architectures of these two DBMSs
+
+#### Blockchain
+
+- Blockchains can be described as distributed, inalterable, verifiable, databases. So, how do they map into this classification? (To fix ideas, let’s focus just on the Bitcoin distributed ledger.
+- Bitcoin works on a cluster of peer-to-peer nodes, each containing a copy of the entire database, operated by different -possibly malicious- actors.
+- Since new nodes can enter the system at any time, and every node has the entire database, availability is not an issue even in case of a partition, but consistency cannot be assured, since you cannot trust a single node.
+- To achieve consistency, Bitcoin uses a form of MVCC based on proof-of-work
+(a proxy for the computing power used in a transaction) and on repeated confirmations by a majority of nodes of a history of transactions.
+- Bitcoin database security is guaranteed by the impossibility of a single actor having enough computing power to alter the history of transactions (with 6 confirmations, an actor that controls 18% of the computing power has just a 1% probability of compromising a legitimate transaction)
+
+#### Why Blockchain does not Help Us
+
+- Blockchains are very inefficient
+  - proof-of-work wastes computing power and it is slow
+  - every node contains a copy of the entire database
+- Consider the cost of a BitCoin transaction (about 30 USD) and the time it takes (which can take anything between 10 minutes and a few hours)
+- By contrast, consider the cost of a bank transaction in the SEPA system (the European Union interbank payment system): 30 to 50 cents, and it is done in a fraction of a second
+- The difference is that SEPA (and the distributed databases described here) assume that no node can be controlled by a malicious actor bent on altering the database
+- In conclusion: BlockChain is solution to a very narrow problem (securing transactions on a public network with potentially malicious actors)... which is great, but it not our problem
+
+#### Why Document-oriented DBMS for Big data?
+
+While Relational DBMSs are extremely good for ensuring consistency and availability, the normalization that lies at the heart of a relational database model implies fine-grained data, which are less conducive to partition-tolerance than coarse-grained data
+
+- A typical contact database in a relational data model may include: a person table, a telephone table, an email table and an address table, all linked to each other.
+- The same database in a document-oriented database would entail one document type only, with telephones numbers, email addresses, etc., nested as arrays in the same document
+
+#### Sharding
+
+- Sharding is the partitioning of a database “horizontally”, i.e. the database rows (or documents) are partitioned into subsets that are stored on different servers. Every subset of rows is called a shard.
+- Usually the number of shards is larger than the number of replicas, and the number of nodes is larger than the number of replicas (usually set to 3)
+- The main advantage of a sharded database lies in the improvement of performance through the distribution of computing load across nodes. In addition, it makes it easier to move data files around, e.g. when adding new nodes to the cluster
+- The number of shards that split a database dictates the (meaningful) number of nodes: **the maximum number of nodes is equal to the number of shards**
+- There are different sharding strategies, most notably:
+  - Hash sharding: to distribute rows evenly across the cluster
+  - Range sharding: similar rows (say, tweets coming for the same area) are stored on the same shard
+
+#### Replication and Sharding
+
+- Replication is the action of storing the same row (or document) on different nodes to make the database fault-tolerant.
+- Sharding is the partition of data into different “buckets”
+- Replication and sharding can be combined with the objective of maximizing availability while maintaining a minimum level of data safety
+- A bit of nomenclature (CouchDB-specific, but the concepts can be generalized to other systems):
+  - n is the number of replicas (how many times the same data item is repeated across the cluster)
+  - q is the number of shards (how many files a database is split)
+  - n * q is the total number of shard files distributed in the different nodes of the cluste
+
+#### Partitions in CouchDB
+
+- A partition is a grouping of logically related rows in the same shard (for instance, all the tweets of the same user)
+- Partitioning improves performance by restricting queries to a narrow set of documents within a single shard
+- To be effective, partitions have to be relatively small (certainly smaller than a shard)
+- A database has to be declared “partitioned” during its creation
+- Partitions are a new feature of CouchDB 3.x
+
+#### MapReduce Algorithms
+
+- This family of algorithms, pioneered by Google, is particularly suited to parallel computing of the Single-Instruction, Multiple-Data(SIMD) type (see Flynn's taxonomy from a previous lecture).
+- The first step (Map), distributes data across machines, while the second (Reduce) hierarchically summarizes them until the result is obtained.
+- Apart from parallelism, its advantage lies in moving the process to where data are, greatly reducing network traffic.
+- MapReduce is the tool of choice when operations on big datasets are to be done due to its horizontal scalability.
+
+### COUCHDB
+
+#### Why Using CouchDB in This Course?
+
+- Is open-source, hence you can peruse the source code and see how things work
+- It has MapReduce queries, hence you can understand how this programming paradigm works
+- It is easy to setup a cluster
+- It has sharding, replication, and partitions
+- The HTTP API makes it easy to interact with it
+
+#### CouchDB Main Features
+
+- Document-oriented DBMS, where documents are expressed in JavaScript Object Notation (JSON)
+- HTTP ReST API (more on ReST in later lectures!)
+- Web-based admin interface
+- Web-ready: since it talks HTTP and produces JSON (it can also produce HTML or XML), it can be both the data and logic tier of a three-tier application, hence avoiding the marshaling and unmarshaling of data objects
+- Support for MapReduce algorithms, including aggregation at different levels
+- JavaScript as the default data manipulation language
+- Full-text search
+- Support of MongoDB query language
+- Support of replication
+- Support of partitions
+- Support of sharding
+- Support of clusterized databases
+
+#### What Happens When a Conflict Happens on a Cluster of CouchDB Nodes?
+
+- When the revision number is not sent during documents update a 409 is raised in a single-node database, but something similar may happen on a clustered database even when the revision number is sent (say, a network partition happended)
+- When a cluster is partitioned and two nodes receive two different updates of the same document, two different revisions are added. However, only one of these is returned as the current revision (the “winning” revision is computed deterministically, hence guaranteed to be the same on any node of the cluster). At any rate, the “losing” revision is still stored in the database, and can be used to solve the conflict.
+- To help in the merging of conflicting revisions, CouchDB can return all the conflicts in a database **GET /exampledb/_all_docs?include_docs=true&conflicts=true**
+
+#### Deletion of Documents
+
+Actually, documents are not deleted until they are “purged”, hence they can be retrieved with a bit of effort (e.g. add document with the same id, then retrieve the old revision).
+
+#### Querying a CouchDB Database
+
+CouchDB has three mechanisms to select a set of documents that exhibit certain features:
+
+- MapReduce Views: results of MapReduce processes that are written as B-tree indexes to disk and become part of the database
+- Mango Queries: queries expressed in JSON, following the MongoDB queries syntax (Mango queries can also use B-tree indexes to speed-up computations)
+- Full-text search: queries that can search form specific works or portions of words (via the Closueau plugin, running in a separate JVM instance)
+
+#### views
+
+- **CouchDB views are not**:
+  - Relational SQL Queries (they are not volatile)
+  - Relational Views (the selected data are persisted)
+  - Indexes (data are persisted together with the index)
+- **What are they**?
+  - CouchDB views are similar to Index-organized tables in Oracle, which are defined in the Oracle documentation as: An index-organized table has a storage organization that is a variant of a primary B-tree. Unlike an ordinary (heap-organized) table whose data is stored as an unordered collection (heap), data for an index-organized table is stored in a B-tree index structure in a primary key sorted manner. Each leaf block in the index structure stores both the key and non-key columns.
+- **Long story short**: views are fast and store aggregated data (which is great for analytics), but are inflexible and use a lot of storage
+- keys parameter: an array of keys, as returned by the view (null when rereduce is true)
+- values parameter: an array of values, as returned by the view
+- rereduce parameter: if false, the reduce is still in its first stage (values are the disaggregated ones); if true, the reduce has already happened at least once, and the function works on aggregated keys and values (hence the keys parameter is null)
+
+## Week 8 (Big Data Analytics)
+
+### 使用大数据分析的流行例子
+
+- Full-text searching 全文本分析
+- Aggregation of data 数据聚合
+- Clustering 集群
+- Sentiment analysis 情感分析
+- Recommendations 推荐
+
+### Challenges of Big Data Analytics
+
+A framework for analysing big data has to distribute both data and processing over many nodes, which implies:
+
+- Reading and writing distributed datasets
+- Preserving data in the presence of failing data nodes
+- Supporting the execution of MapReduce tasks
+- Being fault-tolerant (a few failing compute nodes may slow down the processing, but not stop it)
+- Coordinating the execution of tasks across a cluster
+
+**Tools for big data analytics**: majority of applications are built on top of an open-source framework: **Apache Hadoop**
+
+### Hadoop Distributed File System(HDFS)
+
+**The core of Hadoop is a fault tolerant file system** that has been explicitly designed to span many nodes
+
+HDFS blocks are much larger than blocks used by an ordinary file system (say, 4 KB versus 128MB), the reasons for this unusual size are:(hadoop的block文件更大，一般的是4k一个block，Hadoop的一个block有128m)
+
+- Reduced need for memory to store information about where the blocks are (metadata)块的地址少
+- More efficient use of the network (with a large block, a reduced number network connections needs to be kept open)网络效率高
+- Reduced need for seek operations on big files减少大文件查找
+- Efficient when most data of a block have to be processed处理单块的效率提高
+
+#### HDFS Architecture
+
+A HDFS file is a collection of blocks stored in datanodes, with metadata (such as the position of those blocks) that is stored in namenodes
+
+![hadooparchitecture](pic/hadooparchitecture.png)
+
+#### The Hadoop Resource Manager (YARN)
+
+- The other main component of Hadoop is the MapReduce task manager, YARN (Yet Another Resource Negotiator)
+- YARN deals with executing MapReduce jobs on a cluster. It is composed of a central Resource Manager (on the master) and many Node Managers that reside on slave machines.
+- Every time a MapReduce job is scheduled for execution on a Hadoop cluster, YARN starts an Application Master that negotiates resources with the Resource Manager and starts Containers on the slave nodes (Note: Containers are the processes were the actual processing is done, not to be confused with Docker containers)每次计划在 Hadoop 集群上执行 MapReduce 作业时，YARN 都会启动一个应用程序主程序，该程序与资源管理器协商资源，并启动 salve 节点上的容器(注意:容器是实际处理完成时的进程，不要与 Docker 容器混淆)
+
+The HDFS Shell 是 HDFS cluster 专用的 shell
+
+The main programming language to write MapReduce jobs on Hadoop is Java, but many other languages can be used via different APIs. Indeed any language that can read from standard input and write to standard output can be used. Practically, the hadoop command is used to load the program (with the -file option) and send it to the cluster, and the mapper and reducer are specified with the -mapper and -reducer options
+
+### Apache Spark
+
+#### Why Spark?
+
+- While Hadoop MapReduce works well, it is geared towards performing relatively simple jobs on large datasets.(Hadoop用来处理简单的大数据工作)
+- However, when complex jobs are performed (say, machine learning or graph-based algorithms), there is a strong incentive for caching data in memory and in having finer-grained control on the execution of jobs.
+- Apache Spark was designed to reduce the latency inherent in the Hadoop approach for the execution of MapReduce jobs.(spark用来处理复杂的工作，减少延迟)
+- Spark can operate within the Hadoop architecture, using YARN and Zookeeper to manage computing resources, and storing data on HDFS.（spark基于Hadoop的结构管理运算资源）
+
+#### Spark Architecture
+
+- One of the strong points of Spark is the tightly-coupled nature of its main components:紧耦合
+![sparkarchitecture](pic/sparkarchitecture.png)
+- Spark ships with a cluster manager of its own, but it can work with other cluster managers, such as YARN or MESOS.
+- Spark cluster can be deployed (as containerized services) in a Kubernetes cluster
+可部署在kubernetes上
+
+#### Spark Jobs, Tasks, and Stages
+
+- A Job is the overall processing that Spark is directed to perform by a driver program整个作业
+- A Task is a single transformation operating on a single partition of data on a single node 单点上单个数据的operation
+- A Stage is a set of tasks operating on a single partition单个数据上的所有task
+- A Job is composed of more than one stage when data are to be transferred across nodes (shuffling)
+- The fewer the number of stages, the faster the computation (shuffling data across the cluster is slow)
+
+#### Spark Runtime Architecture
+
+- Applications in Spark are composed of different components including:
+  - Job: the data processing that has to be performed on a dataset数据处理必须在数据集中
+  - Task: a single operation on a dataset数据集上的单个操作
+  - Executors: the processes in which tasks are executed执行任务的过程
+  - Cluster Manager: the process assigning tasks to executors将任务分配给 executors 的过程
+  - Driver program: the main logic of the application应用程序的主逻辑
+  - Spark application: Driver program + Executors
+  - Spark Context: the general configuration of the job作业的配置
+- These different components can be arranged in three different deployment modes across the cluster.(Local Mode, cluster mode, client mode)
+  - In local mode, every Spark component runs within the same JVM. However, the Spark application can still run in parallel, as there may be more than one executor active.每一个 Spark 组件都在同一
+个 JVM 中运行，但是 Spark 的应用程序同样可以并行运行，因为可能存在多个 executors。
+  - In cluster mode, every component, including the driver program, is executed on the cluster; hence, upon launching, the job can run autonomously. This is the common way of running non-interactive Spark jobs非交互的job.
+  - In client mode, the driver program talks directly to the executors on the worker nodes. Therefore, the machine hosting the driver program has to be connected to the cluster until job completion. Client mode must be used when the applications are interactive, as happens in the Python or Scala Spark shells.交互的job
+![spark3mode](pic/spark3mode.png)
+
+ **The deployment mode is set in the Spark Context**, which is also used to set the configuration of a Spark application, including the cluster it connects to in cluster mode.
+
+ Spark Contexts can also be used to tune the execution by setting the memory, or the number of executors to use.
+
+### Resilient Distributed Dataset(RDD)
+
+#### Introducing the Resilient Distributed Dataset
+
+Resilient Distributed Datasets (RDDs) are the way data are stored in Spark during computation, and understanding them is crucial to writing programs in Spark:spark在运算时数据存储方式
+
+- Resilient (data are stored redundantly, hence a failing node would not affect their integrity)
+- Distributed (data are split into chunks, and these chunks are sent to different nodes)
+- Dataset (a dataset is just a collection of objects, hence very generic)
+
+#### Properties of RDDs
+
+- RDDs are immutable, once defined, they cannot be changed (this greatly simplifies parallel computations on them, and is consistent with the functional programming paradigm)不可逆
+- RDDs are transient, they are meant to be used only once, then discarded (but they can be cached, if it improves performance)只使用一次
+- RDDs are **lazily-evaluated**, the evaluation process happens only when data cannot be kept in an RDD, as when the number of objects in an RDD has to be computed, or an RDD has to be written to a file (these are called actions), but not when an RDD are transformed into another RDD (these are called transformations)只在最后运行的时候evaluate
+- 另外一些要点
+  - RDDs are usually created out of data stored elsewhere (HDFS, a local text file, a DBMS)
+  - RDDs can be created out of collections too, using the parallelize function
+  - RDD transformations use Lambda expressions (closures) to simplify programming
+  - always exist only one action, all the others are transformations
+  - RDD variables are just placeholders until the action is encountered. Remember that the Spark application is not just the driver program, but all the RDD processing that takes place on the cluster
+
+## Week 9 Virtualisation
+
+### Virtualisation
+
+#### Terminology
+
+- Virtual Machine Monitor/Hypervisor(VMM): The virtualisation layer between the underlying hardware (e.g. the physical server) and the virtual machines and guest operating systems it supports.介于硬件和虚拟机之间
+  - The environment of the VM should appear to be the same as the physical machine
+  - Minor decrease in performance only
+  - Appears as though in control of system resources
+- Virtual Machine: A representation of a real machine using hardware/software that can host a guest operating system虚拟机
+- Guest Operating System: An operating system that runs in a virtual machine environment that would otherwise run directly on a separate physical system虚拟机上的操作系统
+
+结构上 hardware包含VMM/hypervisor包含VM包含Guest OS
+
+#### Motivation of Visualisation
+
+- Server Consolidation服务器整合
+  - Increased utilisation
+  - Reduced energy consumption
+- Personal virtual machines can be created on demand
+  - No hardware purchase needed
+  - Public cloud computing
+- Security/Isolation
+  - Share a single machine with multiple users
+- Hardware independence
+  - Relocate to different hardware
+- Disadvantages
+  - If the host is down, the VM will be inaccessible. 主机完蛋，虚拟机也进不去。
+  - Increased memory and processor usage as part of overhead introduced by the VM. 增加了内存
+和进程消耗。
+  - Depends on how you configure your machine. 需要自己来配置机器资源和环境
+
+#### Kernel-User mode separation
+
+- Processes run in lower privileged (user) mode进程以低特权模式运行
+- OS Kernel runs in privileged Kernel mode内核以特权内核模式运行
+- OS typically virtualises memory, CPU, disk etc giving appearance of complete access to CPU/memory/disk to application processes
+  - Each process has illusion of access to some/all of the memory or the CPU (but actually shared across multiple processes)
+- Context switches can catch (trap) “sensitive” calls
+  - e.g. add two numbers vs change bios settings;
+  - Sensitive calls -> instruction sets are typically device specific
+
+#### What Happens in a VM?
+
+- Guest OS apps “think” they write to hard disk but translated to virtualised host hard drive by VMM
+- Which one is determined by image that is launched
+- **VHD** (Virtual Hard Disk represents a virtual hard disk drive (HDD). May contain what is found on a physical hard disk, such as disk partitions and a file system, which in turn can contain files and folders.
+- **VMDK** (Virtual Machine Disk) describes containers for virtual hard disk drives to be used in virtual machines like VMware.
+- **qcow2** (QEMU Copy On Write) file format for disk image files used by QEMU. It uses a disk storage optimization strategy that delays allocation of storage until it is actually needed.
+
+![vm](pic/VM.png)
+
+#### Classification of Instructions
+
+- Privileged Instructions: instructions that trap if the processor is in user mode and do not trap in kernel mode
+- Sensitive Instructions: instructions whose behaviour depends on the mode or configuration of the hardware
+  - Different behaviours depending on whether in user or kernel mode: e.g. POPF interrupt (for interrupt flag handling)
+- Innocuous Instructions: instructions that are neither privileged nor sensitive
+  - Read data, add numbers etc
+
+#### Origins - Principles
+
+- Properties of interest
+  - Fidelity: Software on the VMM executes behaviour identical to that demonstrated when running on the machine directly, barring timing effects
+  - Performance: An overwhelming majority of guest instructions executed by hardware without VMM intervention
+  - Safety: The VMM manages all hardware resources
+- Theorem (Popek and Goldberg)
+  - For any conventional third generation computer, a virtual machine monitor may be constructed if the set of sensitive instructions for that computer is a subset of the set of privileged instructions
+- Privilege rings
+  - Ring 0: Typically hardware interactions
+  - Ring 1: Typically device drivers
+  - Specific gates between Rings (not ad hoc)
+  - Allows to ensure for example that spyware can’t turn on web cam or recording device etc
+
+![rings](pic/ring.png)
+
+#### x86 Virtualisability
+
+- x86 architecture was historically not virtualisable, due to sensitive instructions that could not be trapped, e.g. instructions such as:
+  - SMSW - storing machine status word
+  - SGDT, SLDT - store global/local descriptor table register
+  - POPF - interrupt flag (user/kernel mode)
+- Intel and AMD introduced extensions to make x86 virtualisable
+  - AMD SVM (Secure Virtual Machine)
+  - Intel VT (Virtualisation Technology)
+
+#### Virtualisation Strategy
+
+- De-privileging
+  - VMM emulates the effect on system/hardware resources of privileged instructions whose execution traps into the VMM (aka trap-and-emulate)
+  - Typically achieved by running GuestOS at a lower hardware priority level than the VMM
+  - Problematic on some architectures where privileged instructions do not trap when executed at de-privileged level
+- Primary/shadow structures
+  - VMM maintains “shadow” copies of critical structures whose “primary” versions are manipulated by the GuestOS, e.g. memory page tables
+  - Primary copies needed to ensure correct versions are visible to GuestOS
+- Memory traces
+  - Controlling access to memory so that the shadow and primary structure remain coherent
+  - Common strategy: write-protect primary copies so that update operations that might cause page faults can be caught, interpreted, and addressed别人的代码不会影响你的服务器
+
+### Full virtualisation VS Para-virtualisation
+
+#### Full virtualisation
+
+Unmodified guest OS to run in isolation by simulating full hardware (e.g. VMWare) Guest OS has no idea it is not on physical machine.不要改guestOS，效率低
+
+Virtualisation (Guest OS) uses extra rings; VMM traps privileged instructions and translates to hardware specific instructions
+
+- Advantages
+  - Guest is unaware it is executing within a VM
+  - Guest OS need not be modified
+  - No hardware or OS assistance required
+  - Can run legacy OS
+- Disadvantages
+  - can be less efficient
+
+#### Para-virtualisation
+
+- VMM/Hypervisor exposes special interface to guest OS for better performance. Requires a modified/hypervisor aware Guest OS (e.g. Xen) Can optimise systems to use this interface since not all instructions need to be trapped/dealt with需要改guestOS效率高
+
+- Advantages
+  - Lower virtualisation overheads, so better performance, e.g. Xen
+- Disadvantages
+  - Need to modify guest OS (Can’t run arbitrary OS!)
+  - Less portable
+  - Less compatibility
+
+![fullpara](pic/fullpara.png)
+
+### Hardware-assisted virtualisation VS Binary Translation
+
+#### Hardware-assisted virtualisation
+
+Hardware provides architectural support for running a Hypervisor (e.g. KVM)(New processors typically have this. Requires that all sensitive instructions trappable)可以追踪sensitive instruction
+
+- Advantages
+  - Good performance
+  - Easier to implement
+  - Advanced
+    - implementation supports hardware assisted DMA
+    - memory virtualisation
+- Disadvantages
+  - Needs hardware support
+
+#### Binary Translation
+
+Trap and execute occurs by scanning guest instruction stream and replacing sensitive instructions with emulated code (e.g. VMWare)(Don’t need hardware support, but can be much harder to achieve)不需要硬件支持但是难以达成
+
+- Advantages
+  - Guest OS need not be modified
+  - No hardware or OS assistance required
+  - Can run legacy OS
+- Disadvantages
+  - Overheads
+  - Complicated
+  - Need to replace instructions “on-the-fly”
+  - Library support to help this， e.g. vCUDA
+![hardwarebinary](pic/hardwarebinary.png)
+
+### Bare Metal Hypervisor VS Hosted Virtualisation
+
+- Bare Metal Hypervisor: VMM runs directly on actual hardware (e.g. VMWare ESX Server)
+  - Boots up and runs on actual physical machine
+  - VMM has to support device drivers
+- Hosted Virtualisation: VMM runs on top of another operating system (E.g. VMWare Workstation,…)开始套娃
+
+### Operating System Level Virtualisation
+
+- Lightweight VMs (containers)
+- Instead of whole-system virtualisation, the OS creates mini-containers
+  - A subset of the OS is often good enough for many use cases
+  - Akin to an advanced version of “chroot”
+    - operation that changes apparent root directory for current running process and subprocesses. Program run in such a modified environment cannot access files and commands outside that environmental directory tree.
+- Advantages
+  - Lightweight
+  - Many more VMs on same hardware
+  - Can be used to package applications and all OS 
+dependencies into container
+- Disadvantages
+  - Can only run apps designed for the same OS
+  - Cannot host a different guest OS
+  - Can only use native file systems
+  - Uses same resources as other containers
+
+### Memory Virtualisation
+
+Conventionally page tables store the logical page number -> physical page number mappings
+
+![memoryvir](pic/memoryvir.png)
+
+#### Shadow Page Tables
+
+- VMM maintains shadow page tables in lock-step with the page tables
+- Adds additional management overhead
+- Hardware performs guest -> physical and physical -> machine translation
+
+![shadowpage](pic/shadowpage.png)
+
+#### Live Migration from Virtualisation Perspective
+
+very few downtime
+
+![livemigration](pic/livemigration.png)
 
 ## Week 10
-
-## Week 11

@@ -25,20 +25,20 @@ A datum enables to identify a location on the Earth by longitude and latitude
 - a centre point
 - a null meridian
 
-### Projection
+### [Projection](https://www.mathworks.com/help/map/the-three-main-families-of-map-projections.html)
 
 - True projections preserve at least one aspect
   - distance (“equidistant projection”)
   - area (“equivalent projection”)
-  - direction (“conformal projection”)
+  - direction (“conformal projection”)(UTM projection)
 - True projections have special properties
   - meridians are straight lines and intersect in the poles
   - lateral circles are concentric circles around the poles
   - all lines intersect rectangularly
 - 投影方向
-  - Azimuthal projections
-  - Cylindrical projections
-  - Conic projections
+  - Azimuthal projections(meridians直线，lateral circles圆)
+  - Cylindrical projections (meridians直线lateral circles圆和直线)
+  - Conic projections(meridians直线lateral circles圆)
 - Mercator
   - Normal Mercator(竖圆柱)
   - Transverse Mercator(横圆柱)
@@ -80,14 +80,20 @@ A datum enables to identify a location on the Earth by longitude and latitude
   - production information
 - Cartographic generalization
   - Elimination
-  - Simplification
-  - Aggregation
   - Size reduction
-  - Typification
-  - Exaggeration
-  - Classification
-  - Displacement
   - Refinement
+  - Select
+  - Simplify
+  - Smooth
+  - Merge
+  - Aggregate
+  - Typify
+  - Collapse
+  - Reclassify
+  - Exaggerate
+  - Displace
+  - Enhance
+
 - Graphic variables
   - Size
   - Density
@@ -139,7 +145,7 @@ A datum enables to identify a location on the Earth by longitude and latitude
 
 ![contourline](pic/contourline.png)
 
-### Scale
+### Scale (measurement)
 
 = nominal(不可比较只有标签)  
 <, =, > ordinal(只能比大小)  
@@ -309,7 +315,7 @@ In regular polygons, the lowest network length L for N > 5 is the circumference 
 
 **Kyewords: partition**
 
-A **spatial partition** (tessellation) is a subdivision of space that is jointly exhaustive and pair-wise disjoint(j.e.p.d).  
+A **spatial partition** (tessellation) is a subdivision of space that is **jointly exhaustive** and **pair-wise disjoint**(j.e.p.d).  
 
 A **regular polygon** is a polygon with all edges having the same length and all internal angles being equal.(所有边和角相等的多边形)  
 
@@ -506,6 +512,13 @@ Preserving location privacy:
 - Adding noise to locations and time
 - Generalizing the location into suburb or LGA level
 
+### time geography
+
+- Space-time path
+- Space-time prism
+- Space-time cone
+- Space-time station
+
 ### Trajectory
 
 In physics, a trajectory is the path that an object with mass in motion follows through space as a function of time  
@@ -543,7 +556,8 @@ In spatial information, a trajectory is observed and represented by a discrete s
 
 ### Qualitative spatial relations
 
-- Topological relations
+- Topological transformation: May stretch, bend, twist and compress a figure, but may not tear it, puncture it, nor cause it to be self-intersecting.
+- Topological relations(topological relationship)
   - invariant to reference frames
   - invariant under topological transformations
 - Cardinal direction relations
@@ -559,6 +573,7 @@ In spatial information, a trajectory is observed and represented by a discrete s
 
 ### Relations between time intervals
 
+relations between spatial interval order do not matter the answer is 8.
 ![relation](pic/timeinterval.png)
 
 ### Topological relations of regions
@@ -566,6 +581,8 @@ In spatial information, a trajectory is observed and represented by a discrete s
 i: interior, e: exterior, b: boundary  
 4-intersection matrix: describes the relation between two simple regions A and B  
 9-intersection matrix: describes the relation between any two regions (or lines, or region and line) A and B
+
+#### Simple region: 2D object has boundary and interior,with no holes inside
 
 ![topologyrelation](pic/topologyrelation.png)
 ![neighbourhood](pic/conceptualneighbourhood.png)
@@ -576,11 +593,11 @@ i: interior, e: exterior, b: boundary
   - Half-plane
   - Sector
 - Relative direction relations
-  - Relative perspective: dependent on the speaker’s position towards the object
-  - Absolute perspective: based on cardinal directions such as north, east, south, and west
-  - Intrinsic perspective: describes the location of an object using the relation towards another object
-  - Egocentric perspective: related to speaker’s body
-  - Projected egocentric: related to the recipient’s body  
+  - Relative perspective: dependent on the speaker’s position towards the object东西在左边（relative deictic 我前面有棵枣树，有颗桃树我面对的这个方向的枣树的左边）
+  - Absolute perspective: based on cardinal directions such as north, east, south, and west东西在西边
+  - Intrinsic perspective: describes the location of an object using the relation towards another object第三方为参考，树在房子前面
+  - Egocentric perspective: related to speaker’s body说话者为参考，我的前面
+  - Projected egocentric: related to the recipient’s body说话的对象为参考，你的前面  
 
 <hr>
 
@@ -682,6 +699,14 @@ If a function 𝑥(𝑡) contains no frequencies higher than 𝑓 Hz, it is comp
 ### Cost benefit analysis
 
 ![costbenefit](pic/costbenefit.png)
+
+- **cost**
+  - Direct costs would be direct labor involved in manufacturing, inventory, raw materials, manufacturing expenses.
+Indirect costs might include electricity, overhead costs from management, rent, utilities.
+  - Indirect costs of a decision, such as the impact on customers, employees, or delivery times. Opportunity costs such as alternative investments, or buying a plant versus building one. Cost of potential risks such as regulatory risks, competition, and environmental impacts.
+- **benefit**
+  - Direct benefit, Revenue and sales increases from increased production or new product.
+  - Indirect benefits, such as improved employee safety and morale, as well as customer satisfaction due to enhanced product offerings or faster delivery. Competitive advantage or market share gained as a result of the decision.
 
 ### Cost benefit ratio
 
