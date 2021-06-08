@@ -808,6 +808,7 @@ Maximise the locutionary act and its illocutionary force, and minimize the perlo
   - Deliberate projections
   - Propaganda
 - Cartography with partisan interest:
-  - Biased use of colour schemes / visual communication 
+  - Biased use of colour schemes / visual communication
   - Biased samples
   - Biased use of statistics
+

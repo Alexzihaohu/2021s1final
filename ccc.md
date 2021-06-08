@@ -1249,8 +1249,207 @@ Conventionally page tables store the logical page number -> physical page number
 
 #### Live Migration from Virtualisation Perspective
 
-very few downtime
+定义：Live migration is a Hyper-V feature in Windows Server. It allows you to transparently move running Virtual Machines from one Hyper-V host to another without perceived downtime. The primary benefit of live migration is flexibility; running Virtual Machines are not tied to a single host machine. This allows actions like draining a specific host of Virtual Machines before decommissioning or upgrading it. When paired with Windows Failover Clustering, live migration allows the creation of highly available and fault tolerant systems. 
+
+Steps：with a running VM, do check pointing of it, then start slowly copying all the parts of this VM to another. 
+
+步骤：
+
+- Pre-migration: active VM on host A, alternate physical host may be preselected for migration. Block devices mirrored and free resources maintained (VM runs normally on host A)
+- Reservation: initialize a container on the target host
+- Iterative pre-copy: enable shadow paging, copy dirty pages in successive rounds (overheads dur to copying)
+- Stop and copy: suspend VM on host A, generate ARP to redirect traffic to host B, synchronize all remaining VM state to host B (downtime: VM out of service)
+- Commitment: VM state on host A is released
+- Activation: VM starts on host B, connects to local devices, resumes normal operation. (VM runs normally on host B)
+
+好处：can have the continuity of the server, very few downtime
 
 ![livemigration](pic/livemigration.png)
 
 ## Week 10
+
+### OpenStack
+
+#### 基本情况
+
+- Began in 2010 as a joint project between Rackspace and NASA
+- Offers free and open-source software platform for cloud computing for (mostly) IaaS
+- Consists of interrelated components (services) that control / support compute, storage, and networking resources
+- Often used through web-based dashboards, through command-line tools, or programmatically through ReSTful APIs
+- Released under the terms of the Apache License
+- Managed/coordinated by the OpenStack Foundation
+  - non-profit corporate entity established in 2012 to promote OpenStack software and its community
+  - Over 500 companies have since joined the project
+
+#### OpenStack Components
+
+- Many associated/underpinning services
+  - Compute Service (code-named Nova)
+  - Image Service (code-named Glance)
+  - Block Storage Service (code named Cinder)
+  - Object Storage Service (code-named Swift)
+  - Security Management (code-named Keystone)
+  - Orchestration Service (code-named Heat)
+  - Network Service (code-named Neutron)
+  - Container Service (code-named Zun)
+  - Database service (code-named Trove)
+  - Dashboard service (code-named Horizon)
+  - Search service (code-named Searchlight)
+
+#### 核心服务key services
+
+- Keystone验证
+  - Provides an authentication and authorization* service for OpenStack services(给服务验证和授权)
+    - Tracks users/permissions
+  - Provides a catalog of endpoints for all OpenStack services给每个服务一个授权目录
+    - Each service registered during install (Know where they are and who can do what with them)
+    - Project membership; firewall rules; image mgt; …
+  - *Generic authorization system for openStack
+- Nova计算:管理计算周期
+  - Manages the lifecycle of compute instances in an OpenStack environment
+  - Responsibilities include spawning, scheduling and decommissioning of virtual machines on demand
+  - Virtualisation agnostic
+    - Libvirt (open source API, daemon and tools for managing platform virtualisation including support for Kernel based virtual machine (KVM), Quick Emulator (QEMU), Xen, Lightweight Linux Container System (LXC))
+    - XenAPI, Hyper-V, VMWare ESX
+    - Docker (more later from Luca)
+  - API
+    - Nova-api - accepts/responds to end user API calls; supports openStack Compute & EC2 & admin APIs
+  - Compute Core
+    - Nova-compute - Daemon that creates/terminates VMs through hypervisor APIs
+    - Nova-scheduler - schedules VM instance requests from queue and determines which server host to run
+    - Nova-conductor - Mediates interactions between compute services and other components, e.g. image database
+  - Networking
+    - Nova-network - Accepts network tasks from queue and manipulates network, e.g. changing IPtable rules
+  - Image Mgt, Client Tools
+- Swift(object storage存储对象)
+  - Stores and retrieves arbitrary unstructured data objects via RESTful API, e.g. VM images and data
+    - Not POSIX (atomic operations); eventual consistency
+  - Fault tolerant with data replication and scale-out architecture.     - Available from anywhere; persists until deleted
+    - Allows to write objects and files to multiple drives, ensuring the data is replicated across a server cluster
+  - Can be used with/without Nova/compute
+  - Client; admin support
+    - Swift client（allows users to submit commands to ReST API through command line clients to configure/connect object storage to VMs）
+- Cinder(block storage块保存)
+  - Provides persistent block storage to virtual machines (instances) and supports creation and management of block storage devices
+  - Cinder access associated with a VM
+    - Cinder-api   - routes requests to cinder-volume
+    - Cinder-volume   - interacts with block storage service and scheduler to read/write requests; can interact with multiple flavours of storage (flexible driver architecture)
+    - Cinder-scheduler   - selects optimal storage provider node to create volumes (ala nova-scheduler)
+    - Cinder-backup   - provides backup to any types of volume to backup storage provider
+  - Can interact with variety of storage solution
+- Glance(image service镜像管理)
+  - Accepts requests for disk or server images and their associated metadata (from Swift) and retrieves / installs (through Nova)
+    - Glance-api   - image discovery, retrieval and storage requests
+    - Glance-registry   - stores, processes and retrieves metadata about images
+- Neutron(networking网络管理)
+  - Supports networking of OpenStack services
+  - Offers an API for users to define networks and the attachments into them, e.g. switches, routers
+  - Pluggable architecture that supports multiple networking vendors and technologies
+  - Neutron-server: accepts and routes API requests to appropriate plug-ins for action
+    - Port management, e.g. default SSH, VM-specific rules, …
+    - More broadly configuration of availability zone networking, e.g. subnets, DHCP
+- Horizon(Dashboard控制台)
+  - Provides a web-based self-service portal to interact with underlying OpenStack services, such as launching an instance, assigning IP addresses and configuring access controls.
+  - Based on Python/Django web application
+  - Mod_wsgi
+    - Apache plug realising web service gateway interface
+  - Requires Nova, Keystone, Glance, Neutron
+  - Other services optional…
+- Trove(Database Service数据库服务)
+  - Provides scalable and reliable Cloud database (DBaaS) functionality for both relational and nonrelational database engines (for the masses!)
+    - Resource isolation, high performance, automates deployment, config, patching, backups, restores, monitoring…
+    - Use image service for each DB type and trove-manage to offer them to tenants/user communities
+- Sahara(Data Processing Service数据处理hadoop)
+  - Provides capabilities to provision and scale Hadoop clusters in OpenStack by specifying parameters such as Hadoop version, cluster topology and node hardware details
+    - User fills in details and Sahara supports the automated deployment of infrastructure with support for addition/removal of worker nodes on demand
+- Heat(Orchestration Service)
+  - Template-driven service to manage lifecycle of applications deployed on Openstack
+  - Stack: Another name for the template and procedure behind creating infrastructure and the required resources from the template file
+  - Can be integrated with automation tools such as Chef, Puppet, Ansible, etc.
+  - Heat details
+    - heat_template_version: allows to specify which version of Heat, the template was written for (optional)
+    - Description: describes the intent of the template to a human audience (optional)
+    - Parameters: the arguments that the user might be required to provide (optional)
+    - Resources: the specifications of resources that are to be created (mandatory)
+    - Outputs: any expected values that are to be returned once the template has been processed (optional
+
+#### Creating Stacks in MRC/NeCTAR
+
+1. Create the template file according to your requirements
+2. Provide environment details (name of key file, image id, etc)
+3. Select a name for your stack and confirm the parameters
+4. Make sure rollback checkbox is marked, so if anything goes wrong, all partially created resources get dumped too
+5. Wait for the magic to happen!
+
+### FaaS
+
+#### Definition
+
+- FaaS is also know as Serverless computing (more catchy, but less precise)
+- The idea behind Serverless/FaaS is to develop software applications without bothering with the infrastructure (especially scaling-up and down as load increases or decreases)无服务器运算
+- Therefore, it is more Server-unseen than Server-less
+- A FaaS service allows functions to be added, removed, updated, executed, and auto-scaled
+- FaaS is an extreme form of microservice architecture
+
+#### 为啥用Function
+
+- A function in computer science is typically a piece of code that takes in parameters and returns a value
+- Functions are the founding concept of functional programming - one of the oldest programming paradigms
+- Functions are free of side-effects, ephemeral, and stateless, which make them ideal for parallel execution and rapid scaling-up and -down, hence their use in FaaS(无副作用短暂无状态)
+- Simpler deployment部署简单 (the service provider takes care of the infrastructure)
+- Reduced computing costs低成本 (only the time during which functions are executed is billed)
+- Reduced application complexity due to loosely-coupled architecture松耦合
+
+#### FaaS Applications
+
+- Functions are triggered by events事件触发
+- Functions can call each other可调用其他function
+- Functions and events can be combined to build software applications可组合
+- 举例 a function can be triggered every hour (say, to compress log files), or every time disk space on a volume is scarce (to remove old log files), or when a pull-request is closed in GitHub, or when a message is stored in a queue
+- Combining event-driven scenarios and functions resembles how User Interface software is built: user actions trigger the execution of pieces of code
+
+#### FaaS Services and Frameworks
+
+- 案例The first widely available FaaS service was Amazon’s AWS Lambda. Since then Google Cloud Functions (part of Firebase) and Azure Functions by Microsoft
+- 有各自的平台All of the FaaS above allow functions to use the services of their respective platforms, thus providing a rich development environment
+- 一些开源的框架There are several open-source frameworks (funtainers - or functions containers) such as Apache OpenWhisk, OpenFaas, and Kubernetes Knative
+- The main difference between proprietary FaaS services and open-source FaaS frameworks is that the latter can be deployed on your cluster, peered into, disassembled, and improved by you.开源意味着自由度更高
+
+### Functions attributes
+
+#### Side-effect
+
+- A function that does not modify the state of the system is said to be side-effect free (for instance, a function that takes an image and returns a thumbnail of that image)
+- A function that changes the system somehow is not side-effect free (for instance, a function that writes to the file system the thumbnail of an image)
+- Side-effect free functions can be run in parallel, and are guaranteed to return the same output given the same input输入一致输出一致
+- Side-effects, however, are almost inevitable in a relatively complex system. Therefore consideration must be given on how to make functions with side effects run in parallel, as typically required in FaaS environments.无副作用基本上是不可能的，所以尝试在有副作用的情况下实现并行
+
+#### Stateful/Stateless Functions
+
+- A subset of functions with side-effects is composed of **stateful** functions
+- A stateful function is one whose output changes in relation to internally stored information (hence its input cannot entirely predict its output),内部存了数据因此输入并不完全决定输出 e.g. a function that adds items to a “shopping cart” and retains that information internally
+- Conversely, **a stateless function is one that does not store information internally**, e.g. adding an item to a “shopping cart” stored in a DBMS service and not internally would make the function above stateless, but not side-effect free.
+- This is important in FaaS services since there are multiple instances of the same function, and there is no guarantee the same user would call the same function instance twice.一个function有多个instance，一个用户可能不会调用同一个function的instance两次，因此function需要尽可能的stateless
+
+#### Synchronous/Asynchronous Functions
+
+- By default functions in FaaS are synchronous, hence they return their result immediately (or almost so)默认为同步的
+- However, there may be functions that take longer to return a result, hence they incur timeouts and lock connections with clients in the process, hence it is better to transform them into asynchronous functions异步的函数
+- Asynchronous functions return a code that informs the client that the execution has started, and then trigger an event when the execution completes
+- In more complex cases a publish/subscribe pattern involving a queuing system can be used to deal with asynchronous functions
+
+### Fn
+
+#### Introduction
+
+- Fn is an open-source framework that uses Docker containers to deliver FaaS functionality
+- Every function in Fn is a Docker container, ensuring loose coupling between functions (functions can be written in different languages and mixed freely)
+- By using Docker containers as functions, Fn allow to freely mix different languages and environments at the cost of decreased performance, as containers are inherently heavier than threads. However, by using a bit of finesse, a container with a single executable, can weight only a few MBs
+- Fn is the technology behind Oracle Functions (the serverless service of Oracle Cloud)
+- Fn could be deployed on Kubernetes to manage cluster of nodes on which functions are run
+- Fn allows both synchronous and asynchronous functions
+- With Fn Flow, functions can be composed efficiently
+- Fn can add more Docker containers when a function is called more often, and remove containers when the function is called less often
+
+
+
