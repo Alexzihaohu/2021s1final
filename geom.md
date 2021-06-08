@@ -133,6 +133,16 @@ A datum enables to identify a location on the Earth by longitude and latitude
   - grid view
     - element: point, value: opint observation
 
+### information vs spatial information
+
+- Information:
+  - data interpreted for a specific decision process or information need (i.e., interpreted for a purpose)
+- Spatial information:
+  - selects, aggregates or interprets (spatial) data to answer a specific where question
+  - information about places on the Earth's surface
+  - information about where something is
+  - information about what is at a given location
+
 ### Interpolation
 
 - nearest(最近点的值)
@@ -156,6 +166,12 @@ A datum enables to identify a location on the Earth by longitude and latitude
 
 #### Operations
 
+##### Operations can be any
+
+- algebraic (+, -, *, /)
+- statistical (mean, min, max)
+- relational (<, =, >)
+
 - Local operations: consider multiple criteria
 - Focal operations: smoothing, derivation
 - Zonal operations: The value derived at a location is an aggregate of values of an input field, computed over a zone
@@ -165,6 +181,8 @@ A datum enables to identify a location on the Earth by longitude and latitude
 
 - Gradient: 与平面的角
 - Aspect: 坡向, 和北方的夹角
+
+**remove sink first** All other raster cells’ aspects point downhill to the sink, and from sink there is no escape for water flow
 
 ![aspect](pic/aspect.png)
 ![gradient](pic/gradient.png)
@@ -557,7 +575,7 @@ In spatial information, a trajectory is observed and represented by a discrete s
 ### Qualitative spatial relations
 
 - Topological transformation: May stretch, bend, twist and compress a figure, but may not tear it, puncture it, nor cause it to be self-intersecting.
-- Topological relations(topological relationship)
+- Topological relations(topological relationship)**defineing characteristics**
   - invariant to reference frames
   - invariant under topological transformations
 - Cardinal direction relations
@@ -598,8 +616,6 @@ i: interior, e: exterior, b: boundary
   - Intrinsic perspective: describes the location of an object using the relation towards another object第三方为参考，树在房子前面
   - Egocentric perspective: related to speaker’s body说话者为参考，我的前面
   - Projected egocentric: related to the recipient’s body说话的对象为参考，你的前面  
-
-<hr>
 
 ## Week 10
 
