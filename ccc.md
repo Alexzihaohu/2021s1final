@@ -31,9 +31,9 @@
 #### Key distributed systems focus mid-90s
 
 - Transparency and heterogeneity of computer-computer interactions
-- finding/discovering resources (trader!),
-- binding to resources in real time, 
-- run time type checking, 
+- finding/discovering resources (trader!)
+- binding to resources in real time
+- run time type checking
 - invoking resources
 - dealing with heterogeneity of systems
   - applications and operating systems
@@ -178,7 +178,7 @@ $S = \alpha+N(1-\alpha)=N-\alpha(N-1)$
 
 - number of processors that function asynchronously and independently
 - at any time, different processors may be executing different instructions on different pieces of data
-- machines can be shared memory or distributed memory categories 
+- machines can be shared memory or distributed memory categories
   - depends on how MIMD processors access memory
 - Most systems these days operate on MIMD
 
@@ -600,8 +600,7 @@ Two patterns to call services over HTTP
 
 ### REST
 
-"Representational State Transfer (ReST) is intended to evoke an image of how a well-designed Web application behaves: a network of web pages (a virtual state-machine), where the user progresses through an application by selecting links (state transitions), resulting in the 
-next page (representing the next state of the application) being transferred to the user and rendered for their use."
+"Representational State Transfer (ReST) is intended to evoke an image of how a well-designed Web application behaves: a network of web pages (a virtual state-machine), where the user progresses through an application by selecting links (state transitions), resulting in the next page (representing the next state of the application) being transferred to the user and rendered for their use."
 
 1. Clients request Resource through Identifier (URL)
 2. Server/proxy sends representation of Resource
@@ -612,11 +611,8 @@ next page (representing the next state of the application) being transferred to 
 
 ### Resource-Oriented Architecture(ROA)
 
-- A ROA is a way of turning a problem into a RESTful web 
-service: an arrangement of URIs, HTTP, and XML that works 
-like the rest of the Web
-- A resource is anything that’s important enough to be 
-referenced as a thing in itself.
+- A ROA is a way of turning a problem into a RESTful web service: an arrangement of URIs, HTTP, and XML that works like the rest of the Web
+- A resource is anything that’s important enough to be referenced as a thing in itself.
 - If your users might
   - want to create a hypertext link to it
   - make or refute assertions about it
@@ -696,7 +692,7 @@ Making Resources Navigable
 - Essential for using Hypermedia Driven Application State
 - RPC-oriented systems need to expose the available functions
   - functions are essential for interacting with a service
-  - introspection or interface descriptions make functions discoverable 
+  - introspection or interface descriptions make functions discoverable
 - ReSTful systems use a Uniform Interface
   - no need to learn about functions
   - but how to find resources?
@@ -1225,8 +1221,7 @@ Trap and execute occurs by scanning guest instruction stream and replacing sensi
 - Advantages
   - Lightweight
   - Many more VMs on same hardware
-  - Can be used to package applications and all OS 
-dependencies into container
+  - Can be used to package applications and all OS dependencies into container
 - Disadvantages
   - Can only run apps designed for the same OS
   - Cannot host a different guest OS
@@ -1249,9 +1244,9 @@ Conventionally page tables store the logical page number -> physical page number
 
 #### Live Migration from Virtualisation Perspective
 
-定义：Live migration is a Hyper-V feature in Windows Server. It allows you to transparently move running Virtual Machines from one Hyper-V host to another without perceived downtime. The primary benefit of live migration is flexibility; running Virtual Machines are not tied to a single host machine. This allows actions like draining a specific host of Virtual Machines before decommissioning or upgrading it. When paired with Windows Failover Clustering, live migration allows the creation of highly available and fault tolerant systems. 
+定义：Live migration is a Hyper-V feature in Windows Server. It allows you to transparently move running Virtual Machines from one Hyper-V host to another without perceived downtime. The primary benefit of live migration is flexibility; running Virtual Machines are not tied to a single host machine. This allows actions like draining a specific host of Virtual Machines before decommissioning or upgrading it. When paired with Windows Failover Clustering, live migration allows the creation of highly available and fault tolerant systems.
 
-Steps：with a running VM, do check pointing of it, then start slowly copying all the parts of this VM to another. 
+Steps：with a running VM, do check pointing of it, then start slowly copying all the parts of this VM to another.
 
 步骤：
 
@@ -1451,5 +1446,165 @@ Steps：with a running VM, do check pointing of it, then start slowly copying al
 - With Fn Flow, functions can be composed efficiently
 - Fn can add more Docker containers when a function is called more often, and remove containers when the function is called less often
 
+## Week 11 Security
 
+### Security Terminology
 
+- **single sign-on**
+  - Single sign-on (SSO) is a property of access control of multiple related, yet independent, software systems. With this property, a user logs in with a single ID and password to gain access to a connected system or systems without using different usernames orpasswords, or in some configurations seamlessly sign on at each system.
+- **federated identity**
+  - A federated identity in information technology is the means of linking a person’s electronic identity and attributes, stored across multiple distinct identity management systems. Federated identity is related to single sign-on (SSO), in which a user’s single authentication ticket, or token, is trusted across multiple IT systems or even organizations.
+- **identity provider**
+  - An identity provider (abbreviated IdP) is a system entity that creates, maintains, and manages identity information for principals while providing authentication services to relying party applications within a federation or distributed network. An identity provider is “a trusted provider that lets you use single sign-on (SSO) to access other websites.”
+
+### Importance
+
+- If systems (Grids/Clouds/outsourced infrastructure!) are not secure
+  - Large communities will not engage or rather they will only use their own internal resources private clouds!
+  - Expensive (impossible?) to repeat some experiments
+  - Legal and ethical issues possible to be violated with all sorts of consequences
+( e.g. data protection act violations and fines incurred)
+  - Trust is easily lost and hard to re-establish
+
+### Challenge of Security
+
+- Grids and Clouds (IaaS) allow users to compile codes that do stuff on physical/virtual machines
+  - In the Grid world a rich blend of facilities co-existed which had “issues”
+    - **Highly secure supercomputing facilities compromised by single user PCs/laptops**
+    - **Need security technologies that scales to meet wide variety of applications** (from highly secure medical information data sets through to particle physics/public genome data sets)
+  - Using services for processing of patient data through to “needle in haystack” searching of physics experiments
+- Should try to develop generic security solutions
+  - Avoid all application areas re-inventing their own (incompatible/inoperable) solutions
+- Clouds allow scenarios that stretch inter organizational security. 允许拓展组织间安全性的场景。
+  - Policies that restrict access to and usage of resources based on pre-identified users, resources. 基于预先确定的用户(资源)限制对资源的访问和使用的策略。
+  - what if new resources added, new users added, old users go.
+  - What if organizations decide to change policies governing access to and usage of resources, or bring their data back inside of their firewall. 如果组织决定改变管理资源访问和使用的策略，或者将数据带回防火墙，结果会怎样?
+  - What if you share a tenancy with a noisy neighbour.
+  - The multi-faceted challenges of ”life beyond the organisational firewall”?
+
+#### Technical Challenges of Security
+
+- Several key terms that associated with security
+  - Authentication
+  - Authorisation
+  - Audit/accounting
+  - Confidentiality
+  - Privacy
+  - Fabric management 跨组织技术问题
+  - Trust
+
+### Authentication
+
+- 定义Authentication is the establishment and propagation of a user’s identity in the system确定用户身份
+  - Local username/password?用户流动大
+  - Centralised vs decentralised systems?
+    - More scalable solution needed
+  - Public Key Infrastructures (PKI) underpins MANY systems公钥
+    - Based on public key cryptography
+
+#### Public Key Cryptography
+
+- Also called Asymmetric Cryptography
+  - Two distinct keys(One that must be kept private Private Key私钥 One that can be made public Public Key公钥)
+  - Two keys complementary, but essential that cannot find out value of private key from public key两个互补从公钥不能推出私钥(With private keys can digitally sign messages, documents, validate them with associated public keys)私钥用来登录和验证
+- Public Key Cryptography simplifies key management简化了密钥管理
+  - Don’t need to have many keys for long time(The longer keys are left in storage, more likelihood of their being compromised.Only Private Key needs to be kept long term and kept securely)存的时间越长越容易出问题，只需要存私钥
+
+#### Public Key Certificates
+
+- Mechanism connecting public key to user with corresponding private key is **Public Key Certificate**
+  - Public key certificate contains public key and identifies the user with the corresponding private key
+  - Not a new idea (Business card)
+  - Public Key Certificates issued by trusted “Certification Authority”
+
+#### Certification Authority
+
+- Central component of **public key infrastructure (PKI)** is **Certification Authority (CA)** CA has numerous responsibilities
+  - Policy and procedures条款 该干啥不该干啥
+    - How to’s, do’s and don’ts of using certificates
+    - Processes that should be followed by users, organisations, service providers
+  - Issuing certificates生成认证
+    - Often need to delegate to local Registration Authority
+  - Revoking certificates废除认证
+    - **Certificate Revocation List (CRL)** for expired/compromised certificates
+  - Storing, archiving 保存认证
+    - Keeping track of existing certificates, various other information,
+
+#### PKI and Cloud
+
+- Cloud inter-operability begins with security!
+  - There is no single, ubiquitous CA, there are many
+- There are many ways to prove your identity
+- Degrees of trust
+  - But remember need for single sign-on
+- Relation with Cloud for IaaS vs Usage of a Cloud
+  - What we really want is finer-grained security
+  - Clouds don’t tackle this right now
+  - Typically domain/user specific
+
+### Authorisation
+
+- Authorisation is concerned with controlling access to resources based on policy
+用户始否有权限和authentication进行补充
+- Many different approaches for authorisation
+  - Group Based Access Control (e.g. your project VMs)
+  - Role Based Access Control (RBAC)定义role，action，resource再确定policy包含这些之间的关系
+  - Identity Based Access Control (IBAC)
+  - Attribute Based Access Control (ABAC)
+- Authorisation typically applies to services/data deployed on Clouds主要用在job管理除此之外还可用于
+  - Who can install this patch, when can they do it, how many VMs will be affected if this happens…?
+  - Is this virtual image free of trojans, malware etc?
+  - Lots of tools to support this （Pakiti, Cfengine, Puppet, …）
+  - Real challenge of software dependency management for complex systems
+
+#### Authorisation 总结
+
+- Defining what they can do and enforce rules
+  - Each site will have different rules/regulations
+- Often realised through **Virtual Organisations (VO)**
+  - Collection of distributed resources shared by collection of users from one or more organizations typically to work on common research goal
+    - Provides conceptual framework for rules and regulations for resources to be offered/shared between VO institutions/members
+    - Different domains place greater/lesser emphasis on expression and enforcement of rules and regulations (policies)
+
+### Cloud Security Challenges
+
+- Single sign-on
+  - The Grid model (and Shib model!) needed
+  - Currently not solved for Cloud-based IaaS还不支持云的iaas
+  - Onus is on non-Cloud developers to define/support this这玩意儿不是云开发搞出来的
+- Auditing
+  - logging, intrusion detection, auditing of security in external computer facilities
+    - well established in theory and practice and for local systems）
+    - Less mature in Cloud environments (beyond the firewall!)
+  - Tools to support generation of diagnostic trails
+    - Across federations of Clouds?
+    - Log/keep all information?
+    - For how long?
+- Deletion (and encryption!!!)
+  - Data deletion with no direct hard disk
+    - Many tools and utilities don’t work!
+  - Scale of data
+    - Securely deleting a few Mb easy enough
+    - Try to delete a few Tb+?
+- [Liability](https://aws.amazon.com/agreement/)
+- Licensing
+  - Many license models
+    - Per user
+    - Per server
+    - Per organisation
+    - Floating licenses
+    - Fixed to machines
+  - Challenges with the Cloud delivery model
+- Workflows
+  - Many workflow tools for combing SoA services/data flows
+    - Taverna, Pegasus, Galaxy, Kepler, Nimrod, OMS
+  - Many workflows models
+    - Orchestration (centralised definition/enactment),
+    - Choreography (decentralised)
+  - Serious challenges of
+    - defining
+    - enforcing
+    - sharing
+    - enacting
+  - security-oriented workflows
+- The Ever Changing Technical/Legal Landscape
