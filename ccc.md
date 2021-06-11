@@ -107,6 +107,8 @@ Proportion of speed up depends on parts of program that cannot be parallelized
 
 #### Amdahl’s Law
 
+shows that the theoretical speedup of the execution of the whole task increases with the improvement of the resources of the system and that regardless of the magnitude of the improvement, the theoretical speedup is always limited by the part of the task that cannot benefit from the improvement.
+
 $\alpha$ the proportion of the program that cannot be parallelized and must be executed sequentially(非并行运算中不可并行的时间占比)
 
 $T(1) = F(不可并行部分) + P(可并行部分)$, $T(N) = F + P/N$  
@@ -118,7 +120,7 @@ $P/F = \frac{1-\alpha}{\alpha}$
 $S = \frac{1+\frac{1-\alpha}{\alpha}}{1+\frac{1-\alpha}{N\alpha}}=\frac{1}{\alpha+\frac{1-\alpha}{N}}=\frac{1}{\alpha}$  
 
 **Limitation**: 1) each processor has to deal with loop overheads such as calculation of bounds, 2) test for loop completion 3) loop overhead acts as a further (serial) overhead in running the code. 4) Also getting data to/from many processor overheads.  
-Amdahl’s law assumes a fixed problem size. It cannot predict length of time required for some jobs.  
+Amdahl’s law assumes a fixed problem size. It cannot predict length of time required for some jobs. amdahl's law 在实际使用中的问题Amdahl's law applies only to the cases where the problem size is fixed. In practice, as more computing resources become available, they tend to get used on larger problems (larger datasets), and the time spent in the parallelizable part often grows much faster than the inherently serial work. In this case, Gustafson's law gives a less pessimistic and more realistic assessment of the parallel performance
 
 #### Gustafson’s Law （scaled speed-up)
 
@@ -577,6 +579,8 @@ packages
 
 #### SOAP/WS vs ReST
 
+[difference of soap and rest](https://www.guru99.com/comparison-between-web-services.html)
+
 Two patterns to call services over HTTP
 
 - SOAP/WS is built upon the Remote Procedure Call paradigm
@@ -631,9 +635,13 @@ Retrieve Resource | GET
 Update Resource | POST to an existing URI
 Delete Resource | DELETE
 
+[PUT vs POST](https://restfulapi.net/rest-put-vs-post/)
+
 - Common mistake: Always mapping PUT to Update and POST to create
-- PUT should be used when target resource url is known by the client
-- POST should be used when target resource URL is server generated.
+- PUT should be used when target resource url is known by the client(idempotent)
+- POST should be used when target resource URL is server generated.(not idempotent)
+- When creating resources, we will use POST and PUT methods. If we know the URL of the resources, we will use POST method. But if we do not know the URL of the resources, we will use the PUT method to complete the task.
+- When updating resources, the POST method will create a new record for the resource. However, the PUT method will overwrite the past record of the resource.
 
 #### A Generic RoA Procedure
 
@@ -704,7 +712,7 @@ Making Resources Navigable
 
 - HTTP methods can be **Safe, Idempotent, Neither**
 - **Safe methods**: Do not change repeating a call is equivalent to not making a call at all.(多次和0次没区别)
-- **Idempotent methods**: Effect of repeating a call is equivalent to making a single call(多次和1次没区别)
+- **Idempotent methods**: Effect of repeating a call is equivalent to making a single call(多次和1次没区别, 执行的结果和执行次数无关)
   - GET, OPTIONS, HEAD   - Safe
   - PUT, DELETE   - Idempotent
   - POST   - Neither safe nor idempotent
@@ -761,15 +769,17 @@ Making Resources Navigable
 ### Brewer’s CAP Theorem
 
 - CAP
-  - **Consistency**: every client receiving an answer receives the same answer from all nodes in the cluster
-  - **Availability**: every client receives an answer from any node in the cluster
-  - **Partition-tolerance**: the cluster keeps on operating when one or more nodes cannot communicate with the rest of the cluster
+  - **Consistency**: every client receiving an answer receives the same answer from all nodes in the cluster云中所有节点一致
+  - **Availability**: every client receives an answer from any node in the cluster云中所有的节点都可以及时返回数据但是不能保证数据是最新且一致的
+  - **Partition-tolerance**: the cluster keeps on operating when one or more nodes cannot communicate with the rest of the cluster如果单点被独立了还是能继续照常运行
 - While the theorem shows all three qualities are symmetrical, Consistency and Availability are at odds only when a Partition happens
 - “Hard” network partitions may be rare, but “soft” ones are not (a slow node may be considered dead even if it is not); ultimately, every partition is detected by a timeout
 - Can have consequences that impact the cluster as a whole, e.g. a distributed join is only complete when all sub-queries return
-- Traditional DBMS architectures were not concerned with network partitions, since all data were supposed to be in a small, co-located cluster of servers
+- 传统数据库往往不会考虑到network partition因为所有数据都存在一个小的服务器上Traditional DBMS architectures were not concerned with network partitions, since all data were supposed to be in a small, co-located cluster of servers
 - The emphasis on numerous commodity servers, can result in an increased number of hardware failures
 - The CAP theorem forces us to consider trade-offs among different options
+
+Database systems designed with traditional ACID guarantees in mind such as RDBMS choose consistency over availability, whereas systems designed around the BASE philosophy, common in the NoSQL movement for example, choose availability over consistency
 
 #### Consistency and Availability: Two phase commit
 
@@ -807,7 +817,7 @@ This is the usual algorithm used in relational DBMS's (and MongoDB, to same exte
 - MongoDB software routers (MongoS) must be embedded in application servers, while any HTTP client can connect to CouchDB
 - Losing two nodes out of three in the CouchDB architecture shown, means losing access to between one/quarter and half the data, depending on the nodes that fail
 - Depending on the cluster configuration parameters and the nature (primary or secondary) of the lost nodes, losing two nodes in the MongoDB example may imply losing write access to half the data (although there are ten nodes in the cluster instead of three), and possibly read access too, These differences are rooted in different approaches to an unsolvable problem, a problem defined by Brewer’s CAP Theorem
-- While CouchDB uses MVCC, MongoDB uses a mix of two-phase commit (for replicating data from primary to secondary nodes) and Paxos-like (to elect a primary node in a replica-set)
+- While CouchDB uses MVCC, MongoDB uses a mix of two-phase commit (for replicating data from primary to secondary nodes) and Paxos-like (to elect a primary node in a replica-set) CouchDB选择保证availability和partition tolerance
 - A network partition may segregate a primary into a partition with a minority of nodes. When the primary detects that it can only see a minority of nodes in the replica set, the primary steps down as primary and becomes a secondary. Independently, a member in the partition that can communicate with a majority of the nodes (including itself) holds an election to become the new primary.
 - The different choices of strategies explains the different cluster architectures of these two DBMSs
 
@@ -866,6 +876,8 @@ While Relational DBMSs are extremely good for ensuring consistency and availabil
 - Partitions are a new feature of CouchDB 3.x
 
 #### MapReduce Algorithms
+
+[Mapreduce的优势](https://www.tutorialspoint.com/advantages-of-hadoop-mapreduce-programming)
 
 - This family of algorithms, pioneered by Google, is particularly suited to parallel computing of the Single-Instruction, Multiple-Data(SIMD) type (see Flynn's taxonomy from a previous lecture).
 - The first step (Map), distributes data across machines, while the second (Reduce) hierarchically summarizes them until the result is obtained.
@@ -1173,6 +1185,23 @@ Resilient Distributed Datasets (RDDs) are the way data are stored in Spark durin
 
 ### Virtualisation
 
+[virtual machine的优缺点](https://www.cynexlink.com/2017/08/18/virtual-machines-pros-cons/)
+
+- Advantages:
+  - Personal virtual machine can be created on demand.
+    - No hardware purchase needed
+  - Service consolidation
+    - Increased utilization
+    - Reduced energy consumption
+  - Hardware independence
+    - Relocate to different hardware
+  - Security & isolation
+a) Share a single machine with multiple users
+- Disadvantages:
+  - If the host is down, the VM will be inaccessible
+  - Increased memory and processor usage as part of overhead introduced by the VM.
+  - Depends on how you configure your machine.
+
 #### Terminology
 
 - Virtual Machine Monitor/Hypervisor(VMM): The virtualisation layer between the underlying hardware (e.g. the physical server) and the virtual machines and guest operating systems it supports.介于硬件和虚拟机之间
@@ -1360,11 +1389,19 @@ Conventionally page tables store the logical page number -> physical page number
 
 #### Shadow Page Tables
 
+定义Shadow page tables: The shadow page table is a data structure that is actively maintained and refilled by the VMM. The shadow page table mirrors what the guest is doing in terms of its own page tables and in terms of what the VMM translates the guest physical address to the host physical address.
+
 - VMM maintains shadow page tables in lock-step with the page tables
 - Adds additional management overhead
 - Hardware performs guest -> physical and physical -> machine translation
 
 ![shadowpage](pic/shadowpage.png)
+
+**How hardware and software virtualization differ in treatment of shadow pages**
+
+The hardware does a lot of the management of shadow page tables, hence is faster but need all calls to be trappable by hardware. Doing it in software virtualization requires sensitive calls to be trapped and handled by the VMM, which is slower. VMM needs to keep shadow page tables synchronized with guest page tables. (however, having para-virtualization can improve the performance)
+
+Performance is a major advantage of hardware virtualization. The hypervisor maintains shadow page tables and having this approach adds additional management overheads. By addressing this in hardware, the performance issues of Guest OS memory to actual physical memory and the actual instruction sets that require paging can be tackled in a more performant manner. Imagine if every single call to memory had to get processed in software - there would be large amounts of overheads for any/all Guest OSs that would degrade the performance of anyone using the Cloud. 
 
 #### Live Migration from Virtualisation Perspective
 
@@ -1711,7 +1748,7 @@ Steps：with a running VM, do check pointing of it, then start slowly copying al
 - Deletion (and encryption!!!)
   - Data deletion with no direct hard disk
     - Many tools and utilities don’t work!
-  - Scale of data
+  - Big data deletion
     - Securely deleting a few Mb easy enough
     - Try to delete a few Tb+?
 - [Liability](https://aws.amazon.com/agreement/)
@@ -1736,3 +1773,17 @@ Steps：with a running VM, do check pointing of it, then start slowly copying al
     - enacting
   - security-oriented workflows
 - The Ever Changing Technical/Legal Landscape
+
+#### cloud security Challenge
+
+- different people from different systems may have different privileges, may or may not have the access to the same kind of systems
+- privileges: different systems do not know the user’s privilege on each other when a service requires a specific attribute of privilege information of the user for authentication
+- resources: if the service is a gate way through which to get access to remote stuff, how can the privileges being defined by uom to allow the user to unlock the remote sites
+- access control
+- trust: there are many ways to prove identity, meaning that there are different levels of trust associated with that  
+
+**What are the advantages and disadvantages of the Shibboleth approach for security?**
+
+Adv: support single sign-on
+
+disAdv: static federation. If a user’s profile has changed, it will not be updated 
