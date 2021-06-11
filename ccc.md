@@ -928,6 +928,130 @@ CouchDB has three mechanisms to select a set of documents that exhibit certain f
 - values parameter: an array of values, as returned by the view
 - rereduce parameter: if false, the reduce is still in its first stage (values are the disaggregated ones); if true, the reduce has already happened at least once, and the function works on aggregated keys and values (hence the keys parameter is null)
 
+- Views
+  - are grouped into design documents (example);
+  - may be passed the level of aggregation (group_level);用group level来进行累积
+  - may return only a subset of keys (start_key, end_key parameters);可能只返回部分的值
+  - 永久存在disk上are persisted to disk, hence adding an entire document in the view result would duplicate disk space, such as in emit(words[i],doc) (don't! Use include_docs=true instead);
+  - 给文档加一个type参数因为一般一个数据库中不会有其他的数据类型Since there is no schema and documents of different types are often stored in the same database, it is useful to add a type attribute to docs, which comes in handy when defining views.
+  - 需要时间进行更新are computed (indexed) in the background by a daemon called ken, hence it may take some time before an update operation is reflected in the views (this feature has been introduced in CouchDB 3.x);
+  - design document文件里面一个view更新会导致所有view更新are re-computed every time one of the views in the same the design document is updated, hence be careful in packing too many views in the same design document;
+  - can be defined in languages other than JavaScript
+  - 可用library. can use libraries (only in the map part of the view definition)
+  - 不可以自定义参数cannot be passed custom parameters, either during indexing or during querying
+- 只能被单个文件影响Computation of views can be influenced only by the document itself (referential transparency):
+  - no reading of other documents
+  - no passing of parameters during indexing
+- 除非设定否则结果只会在更新之后展示Since views are updated only when used (lazy evaluation), their results would have to wait for the view update… unless stale parameter is set to update_after (forcing the update of the view to happen after the results are returned to the client)
+- reduce可以做一些复杂操作The Reduce part of a View can be more complex than adding values (sum, count, min and max can be computed in one go by using the _stat function)
+- reduce的运算顺序不可以影响结果Reduce function must be referentially transparent, associative and commutative.
+- view的限制以及解决办法 However powerful, views are limited, since they can produce only JSON and cannot change their behavior
+  - Show functions are applied to the output of a single document query. Show functions transform an entire document into something else.
+  - List functions are applied to the output of Views. List functions transform a view into a list of something (can be a list of HTML $<li>$ tags, or a list of $<doc>$ XML tags.
+  - List and Show functions can be seen as the equivalent of JEE servlets. Both these two classes of functions can modify their behavior when HTTP request parameters are sent, and both can produce non-JSON output
+
+### couchdb code
+
+增删数据库
+
+curl -X PUT "http://localhost:5984/exampledb"
+
+curl -X DELETE "http://localhost:5984/exampledb"
+
+读所有的数据库
+
+curl -X GET "http://localhost:5984/_all_dbs"
+
+存单条数据，doc为_id
+
+curl -X PUT "http://127.0.0.1:5984/demo/doc" -d "{""motto"": ""I love gnomes""}"
+
+直接对此条数据无法更新需要带上_rev的编号
+
+curl -X PUT "http://127.0.0.1:5984/demo/doc?rev=1-xxxxx" -d "{""motto"": ""I love gnomes""}"
+
+删除数据
+
+curl -X DELETE "http://127.0.0.1:5984/demo/doc"
+
+Actually, documents are not deleted until they are “purged”, hence they can be retrieved with a bit of effort
+
+永久删除
+
+curl -X POST "http://127.0.0.1:5984/demo/_purge" -H 'Content-Type:application/json' -d "{""doc"": [""1-xxxxx""]}"
+
+删除历史数据
+
+curl -X POST "http://localhost:5984/my_db/_compact" --header "Content-Type: application/json"
+
+bulk manage单次读入多条数据
+
+curl -v -X POST "http://localhost:5984/exampledb/_bulk_docs" --header "Content-Type:application/json" --data '{"docs":[{"name":"joe"},{"name":"bob"}]}'
+
+### Querying CouchDB database
+
+function(doc) {emit(doc.city,1);}
+
+http://localhost:5984/userdb/_design/demo/_view/new-view?group_level=1
+
+```(javascript)
+mango query
+{
+   "fields": [
+      "_id",
+      "city",
+      "val.text"
+   ],
+   "selector": {
+      "city": {
+         "$eq": "Sydney"
+      }
+   }
+}
+更复杂的查找多个条件筛选
+{
+   "fields": [
+      "_id",
+      "city",
+      "val.text"
+   ],
+   "selector": {
+      "$and": [
+         {
+            "city": {
+               "$eq": "Sydney"
+            }
+         },
+         {
+            "val.text": {
+               "$eq": "God is good."
+            }
+         }
+      ]
+   }
+}
+创建index
+{
+   "ddoc": "indexes",
+   "index": {
+      "fields": ["user.lang", "user.screen_name"]
+   },
+   "name": "lang-screen-index",
+   "type": "json"
+}
+生成partition的数据库
+curl -XPUT "http://${user}:${pass}@${masternode}:5984/twitterpart?partitioned=true"
+```
+
+### Some highlights
+
+- During database creation, it is possible to define the number of shards (q) and of replicas (n): $curl -XPUT “http://<hostname>:5984/test?n=3&q=4”$
+- Write operations complete successfully only if the document is committed to a quorum of replicas (usually a simple majority, parameter w)
+- Read operations complete successfully only if a quorum of replicas (parameter r) return matching documents (it still uses MVCC, but the use of quorum makes transactions safer or faster)
+- The default of these parameters (n, q, r, w) are set in the cluster section of the *.ini configuration file
+
+
+
 ## Week 8 (Big Data Analytics)
 
 ### 使用大数据分析的流行例子
@@ -1456,6 +1580,10 @@ Steps：with a running VM, do check pointing of it, then start slowly copying al
   - A federated identity in information technology is the means of linking a person’s electronic identity and attributes, stored across multiple distinct identity management systems. Federated identity is related to single sign-on (SSO), in which a user’s single authentication ticket, or token, is trusted across multiple IT systems or even organizations.
 - **identity provider**
   - An identity provider (abbreviated IdP) is a system entity that creates, maintains, and manages identity information for principals while providing authentication services to relying party applications within a federation or distributed network. An identity provider is “a trusted provider that lets you use single sign-on (SSO) to access other websites.”
+- **Public Key Infrastructure**
+  - A public key infrastructure (PKI) is a set of roles, policies, and procedures needed to create, manage, distribute, use, store, and revoke digital certificates and manage public-key encryption. It is required for activities where rigorous proof is required to confirm the identity of the parties involved in the communication and to validate the information being transferred
+- **Certificate authority**
+  - A certificate authority stores, issues and signs the digital certificates. A registration authority verifies the identity of entities requesting their digital certificates to be stored at the CA.
 
 ### Importance
 

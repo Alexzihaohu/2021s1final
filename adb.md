@@ -31,17 +31,25 @@ H: hit ratio, C: cache access time, M: memory access time
 
 ### Database architectures
 
-- Centralized: Data stored in one place
-- Distributed:  Data distributed across several nodes, can be in different locations
-- WWW: Stored all over the world, several owners of the data
-- Grid: Like distributed, but each node manages own resource; system doesn’t act as a single unit.
-- P2P: Like grid, but nodes can join and leave network at will (unlike Grid)
-- Cloud: Generalization of grid, but resources are accessed on demand.
+- Centralized: Data stored in one place. 特性: suitable for simple applications, easy to manage; may not scale well
+- Distributed:  Data distributed across several nodes, can be in different locations特性Scalable, suitable for large applications and applications that need data access from different physical locations; System administration and crash recovery is difficult, usually have some data inconsistency
+- WWW: Stored all over the world, several owners of the data 特性：Very convenient to access and share data; security issues, no guarantee on availability or consistency
+- Grid: Like distributed, but each node manages own resource; system doesn’t act as a single unit.特性Less used now-a-days, very similar to distributed systems with administration done locally by each owner
+- P2P: Like grid, but nodes can join and leave network at will (unlike Grid)特性Suitable when the nodes of the network cannot be planned in advance, or some may leave and join frequently. For example, sensor network
+- Cloud: Generalization of grid, but resources are accessed on demand.特性on-demand resources, cost-effective, maintenance done externally by the cloud provider; some privacy and confidentially issue – but most trusted providers well address them
 
 ## 2nd 3rd Week
 
 **Keywords:Storage area networks(SAN)**
 ![avatar](./pic/SAN.png)
+
+### terminology
+
+Mean time to failure: the time elapsed before a failure occurs
+
+Mean time between failure: 和mttf一样的概念但是mtbf常用于repairable system。mttf常用于non-repairable system.
+
+mean time to repair: the time elapsed when the service is down in a repairable system.
 
 ### ACID  
 
@@ -296,6 +304,8 @@ Spin locks are the most commonly used locks
 ### Deadlocks(等对方解锁)
 
 In a deadlock, each process in the deadlock is waiting for another member to release the resources it wants.
+
+deadlock不成立的情况: no cycle in the locks held and requested by the transaction.
 
 #### Solutions
 
