@@ -267,9 +267,9 @@ To resolve conflicts and preserve database consistency
   - do not use busy waiting and therefore more effective
 - **Spin locks**(访问之前查看上锁状态)
   - using atomic lock/unlock instructions such as **test and set** or **compare and swap**
-  - need hardware support     - should be able to lock bus (communication channel between CPU and memory + any other devices) for two memory cycles (one for reading and one for writing). During this time no other devices’ access is allowed to this memory location.
-  - algorithm does not depend on number of processes
-  - are very efficient for low lock contentionsv (all DB systems use them)
+  - 缺点need hardware support     - should be able to lock bus (communication channel between CPU and memory + any other devices) for two memory cycles (one for reading and one for writing). During this time no other devices’ access is allowed to this memory location.
+  - 优点algorithm does not depend on number of processes
+  - 优点are very efficient for low lock contentionsv (all DB systems use them)
   - use busy waiting
 
 #### Atomic operation

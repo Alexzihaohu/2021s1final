@@ -119,7 +119,7 @@ $P/F = \frac{1-\alpha}{\alpha}$
 
 $S = \frac{1+\frac{1-\alpha}{\alpha}}{1+\frac{1-\alpha}{N\alpha}}=\frac{1}{\alpha+\frac{1-\alpha}{N}}=\frac{1}{\alpha}$  
 
-**Limitation**: 1) each processor has to deal with loop overheads such as calculation of bounds, 2) test for loop completion 3) loop overhead acts as a further (serial) overhead in running the code. 4) Also getting data to/from many processor overheads.  
+**Limitation & challenge**：1) each processor has to deal with loop overheads such as calculation of bounds, 2) test for loop completion 3) loop overhead acts as a further (serial) overhead in running the code. 4) Also getting data to/from many processor overheads.  
 Amdahl’s law assumes a fixed problem size. It cannot predict length of time required for some jobs. amdahl's law 在实际使用中的问题Amdahl's law applies only to the cases where the problem size is fixed. In practice, as more computing resources become available, they tend to get used on larger problems (larger datasets), and the time spent in the parallelizable part often grows much faster than the inherently serial work. In this case, Gustafson's law gives a less pessimistic and more realistic assessment of the parallel performance
 
 #### Gustafson’s Law （scaled speed-up)
@@ -253,7 +253,7 @@ $S = \alpha+N(1-\alpha)=N-\alpha(N-1)$
 - Distributed File Systems
   - e.g. Hadoop, Lustre, Ceph…
 
-### Erroneous Assumptions of Distributed Systems
+### Erroneous Assumptions of Distributed Systems(challenge of large-scale distributed system )
 
 1. The network is reliable
 2. Latency is zero
@@ -374,6 +374,37 @@ mpirun -np 8 python HappyCity1.py 使用 mpi 并行运行代码文件
 - Correctness in parallelisation requires synchronisation. Synchronisation and atomic operations causes loss of performance, communication latency.
 - Amdahl's law, establishes the maximum improvement to a system when only part of the system has been improved.
 
+#### Why accuracy of walltime important
+
+- If too high: going to be queued longer
+
+- If too low: job will be terminated when wall time is reached if the job is not finished
+
+#### HPC 的performance 理想与现实有差距，当throughput发生时
+
+- 为什么会出现这种情况
+
+  - jobs stack in queue;
+  - when there are many people using the system at the same time, the overall usage of the facility is high, and the nodes will be busy, hence decrease in performance
+
+- How to minimize this:
+  - Have multiple systems, dedicated to certain type of jobs
+  - Queuing systems to only schedule jobs when resources are free, to avoid blocking of system by user with large reservation demands for job
+  - Modules setup with main libraries installed
+
+- For a user, how to optimize throughput:
+  - Load the right modules
+  - Good walltime choices, minimum necessary(参见Why accuracy of walltime important)
+  - Benchmark small data, then scale up to appropriately large value
+  - Avoid demanding large scale resources, which will block other people from accessing those resources
+
+#### challenges with application benchmarking on HPC facilities
+
+- Shared facility so not just for the user and can’t guarantee runs same result
+- benchmarking apps is hard, different alogrithm implementation different performance
+- Linpack (Top 500) is a fixed set of algorithms that don’t reflect real world apps.
+- HPC are designed for different purposes. can not compare HPC build for different purpose.
+
 ## Week 5 Cloud and Automation
 
 **Cloud computing** is a model for enabling ubiquitous, convenient, on-demand network access to a shared pool of configurable computing resources (e.g., networks, servers, storage, applications, and services) that can be rapidly provisioned and released with minimal management effort or service provider interaction.
@@ -447,6 +478,42 @@ mpirun -np 8 python HappyCity1.py 使用 mpi 并行运行代码文件
   - Gmail
   - Salesforce
   - Microsoft Office 365
+
+#### XaaS security
+
+- SaaS security issues
+i. Users have minimal security control rights.
+ii. Application security: SaaS applications are usually released via the Web, so defects in Web 
+applications may cause vulnerabilities in SaaS applications.
+iii. Multi-tenant problem: One application serves multiple customers. Although resource utilization 
+is improved, the risk of data leakage is high when customer data is stored in the same database.
+iv. Data security issues: Data security is a universal issue. Because users must rely on service 
+providers to provide data security in the SaaS model, they have become an important issue.
+v. Accessibility issues: Because the services provided by the Web allow access via the internet. 
+Although accessibility is improved, extensive access also brings some security risks. For 
+example, information theft and insecure application markets.
+- PaaS security issues
+i. Third-party relationship issues: PaaS provides third-party web server formation. However, the 
+close connection between them leads to the security of third-party services determines the 
+security of PaaS.
+ii. Development life cycle issues: Frequent changes in PaaS components may damage application 
+security.
+iii. The security of the underlying infrastructure: The underlying security is the responsibility of the 
+service provider, so developers cannot guarantee that the development environment is secure.
+- IaaS security issues
+i. Virtualization issues: The security of virtual machines is very similar to the security of physical 
+machines. But virtual machines add entry points, providing the complexity of interconnection. 
+So, the security challenges he faces are more severe.
+ii. Virtual machine monitor problem: VMM is responsible for VM isolation. If the VMM is 
+damaged, the VM will also be damaged. Virtualization allows VMs to migrate between physical 
+servers, which exposes the contents of VMs to the network, and the integrity and confidentiality 
+of data can be compromised.
+iii. Shared resource problem: Resource sharing between VMs may reduce VM security.
+iv. Public VM image library problem: In an IaaS environment, users may upload images containing 
+malicious code to the public image library, thereby undermining the security of other users and 
+even cloud systems.
+v. Virtual network sniffing or spoofing: A malicious VM can eavesdrop on a virtual network and 
+even use ARP spoofing to induce the VM's communication packets to be redirected.
 
 ### Terms
 
@@ -526,6 +593,22 @@ packages
   - YAML is a human friendly data serialization standard for all programming languages.
 - Ansible uses Jinja2 templating for dynamic expression
   - Jinja2 is a modern and designer-friendly templating language for Python, modelled after Django’s templates.
+
+**Question** Applications can be deployed across Clouds either through creation and deployment of virtual images (snapshots) or through scripting the installation and configuration of software applications.用snapshot和script做部署有什么优劣
+
+What are the benefits and drawbacks of these approaches?
+
+- Snapshots
+  - benefits
+    - Snapshots are easy, can be created just by clicking buttons on dashboard
+  - drawbacks
+    - No history of how the instance built -> no control
+- Scripting
+  - benefits
+    - Scripting allows to do much more(start application,configure application, deploy application, upgrade system)thus, have more controll over the system
+    - Scripting has complete record of how to build and deploy
+  - drawbacks
+    - harder compared to clicking buttons in Snapshots
 
 ## Week 6 Service-oriented Architectures
 
@@ -769,8 +852,8 @@ Making Resources Navigable
 ### Brewer’s CAP Theorem
 
 - CAP
-  - **Consistency**: every client receiving an answer receives the same answer from all nodes in the cluster云中所有节点一致
-  - **Availability**: every client receives an answer from any node in the cluster云中所有的节点都可以及时返回数据但是不能保证数据是最新且一致的
+  - **Consistency**: every client receives the same answer from all nodes in the cluster云中所有节点一致
+  - **Availability**: every client receives an answer from any node in the cluster (which might differ from node to node)云中所有的节点都可以及时返回数据但是不能保证数据是最新且一致的
   - **Partition-tolerance**: the cluster keeps on operating when one or more nodes cannot communicate with the rest of the cluster如果单点被独立了还是能继续照常运行
 - While the theorem shows all three qualities are symmetrical, Consistency and Availability are at odds only when a Partition happens
 - “Hard” network partitions may be rare, but “soft” ones are not (a slow node may be considered dead even if it is not); ultimately, every partition is detected by a timeout
@@ -885,6 +968,14 @@ While Relational DBMSs are extremely good for ensuring consistency and availabil
 - MapReduce is the tool of choice when operations on big datasets are to be done due to its horizontal scalability.
 
 ### COUCHDB
+
+**Replica number**:Number of copies of the same shard kept in the cluster
+
+**Number of shards**:Number of “horizontal” partitions of a database
+
+**Read quorum**:Minimum number of nodes that have to give the same result to a read operation for it to be declared valid and sent back to the client.
+
+**Write quorum**: Minimum number of nodes that have to concur on a write operation for it to be accepted.
 
 #### Why Using CouchDB in This Course?
 
@@ -1148,11 +1239,11 @@ The main programming language to write MapReduce jobs on Hadoop is Java, but man
   - Driver program: the main logic of the application应用程序的主逻辑
   - Spark application: Driver program + Executors
   - Spark Context: the general configuration of the job作业的配置
-- These different components can be arranged in three different deployment modes across the cluster.(Local Mode, cluster mode, client mode)
-  - In local mode, every Spark component runs within the same JVM. However, the Spark application can still run in parallel, as there may be more than one executor active.每一个 Spark 组件都在同一
+- These different components can be arranged in three different deployment modes across the cluster.(Local Mode, cluster mode, client mode)three different Apache SPARK runtime modes （spark的三种mode）
+  - In **local mode**, every Spark component runs within the same JVM. However, the Spark application can still run in parallel, as there may be more than one executor active.每一个 Spark 组件都在同一
 个 JVM 中运行，但是 Spark 的应用程序同样可以并行运行，因为可能存在多个 executors。
-  - In cluster mode, every component, including the driver program, is executed on the cluster; hence, upon launching, the job can run autonomously. This is the common way of running non-interactive Spark jobs非交互的job.
-  - In client mode, the driver program talks directly to the executors on the worker nodes. Therefore, the machine hosting the driver program has to be connected to the cluster until job completion. Client mode must be used when the applications are interactive, as happens in the Python or Scala Spark shells.交互的job
+  - In **cluster mode**, every component, including the driver program, is executed on the cluster; hence, upon launching, the job can run autonomously. This is the common way of running non-interactive Spark jobs非交互的job.
+  - In **client mode**, the driver program talks directly to the executors on the worker nodes. Therefore, the machine hosting the driver program has to be connected to the cluster until job completion. Client mode must be used when the applications are interactive, as happens in the Python or Scala Spark shells.交互的job
 ![spark3mode](pic/spark3mode.png)
 
  **The deployment mode is set in the Spark Context**, which is also used to set the configuration of a Spark application, including the cluster it connects to in cluster mode.
@@ -1181,7 +1272,15 @@ Resilient Distributed Datasets (RDDs) are the way data are stored in Spark durin
   - always exist only one action, all the others are transformations
   - RDD variables are just placeholders until the action is encountered. Remember that the Spark application is not just the driver program, but all the RDD processing that takes place on the cluster
 
-## Week 9 Virtualisation
+## Week 9 Container & Virtualisation
+
+### Container Docker
+
+#### orchestration
+
+- Container orchestration technologies provides a framework for integrating and managing containers at scale.
+- Benefits: i. Simplify container management processes. ii. Help to manage availability and scaling of containers.
+- Several orchestration tools: Docker Swarm, Kubernetes
 
 ### Virtualisation
 
@@ -1422,6 +1521,75 @@ Steps：with a running VM, do check pointing of it, then start slowly copying al
 
 ![livemigration](pic/livemigration.png)
 
+#### Virtualization vs Containerization
+
+Container based solutions such as Docker have advantages and disadvantages compared to traditional Cloud-based virtualization solutions based upon hypervisors. 
+
+- Advantages:
+i. Lightweight
+ii. Many more VMs on same hardware
+iii. Can be used to package applications and all OS dependencies into container
+- Disadvantages:
+i. Can only run apps designed for the same OS
+ii. Cannot host a different guest OS
+iii. Can only use native file systems
+iv. Uses same resources as other containers.
+
+- Guest OS
+  - Running on virtual Hardware will have their own OS kernels, thus introduce virtualization overhead. While container allows virtual instances to share a single host OS to reduce these wasted resources
+- Communication
+  - Virulization communicate through Ethernet devices. Container communicate through IPC mechanisms
+- Security
+  - Virulization depends on the Hypervisor. Container requires close scrutiny.
+- Performance
+  - Virulization has small overhead incurs when instructions are translated from guest to host OS. Container have near native performance.
+- Isolation
+  - Virulization has file systems and libraries are not shared between guest and host OS. Container has file systems and libraries can be shared.
+- Startup time
+  - Virulization's startup time is slow. Container's startup time is fast.
+- Storage
+  - Virulization's requires storage space is large. Container's requires storage space is small and most are reusable.
+
+The many advantages of virtualization, such as application  containment and horizontal scalability, come at a cost: resources. The guest OS and binaries can give rise to duplications between VMs wasting server processors, memory and disk space and limiting the number of VMs each server can support.
+
+Containerization allows virtual instances to share a single host OS (and associated drivers, binaries, libraries) to reduce these wasted resources since each container only holds the application and related binaries. The rest are shared among the containers.
+
+#### Docker Nomenclature
+
+- Container: a process that behaves like an independent machine, it is a runtime instance of a docker image.
+- Image: a blueprint for a container.
+- layer: modification to the image, represented by an instruction in the Dockerfile.
+- Dockerfile: the recipe to create an image.
+- Build: the process of building Docker images.
+- Registry: a hosted service containing repositories of images. E.g., the Docker Hub (https://hub.docker.com)
+- Docker Hub: a centralized resource for working with Docker and its components
+- Repository: is a sets of Docker images.
+- Tag: a label applied to a Docker image in a repository.
+- Compose: Compose is a tool for defining and running multi-containers Docker applications. 
+- SWARM mode: a standalone native clustering / orchestration tool for Docker.
+
+#### Two options for container to store file on host machine
+
+- Docker volumes (Managed by Docker, /var/lib/docker/volume/)
+- Bind mounts (Managed by user, any where on the file system)
+
+#### Docker file
+
+![dockerfile](pic/dockerfile.png)
+
+- ENTRYPOINT gets executed when the container starts. CMD specifies arguments that will be fed to the ENTRYPOINT.
+- Unless it is overridden, ENTRYPOINT will always be executed.
+
+#### Docker swarm
+
+- Raft consensus group consists of internal distributed state store and all manager nodes.
+- Internal Distributed State Store is a built-in key-value store of Docker Swarm mode.
+- Manager Node conducts orchestration and management tasks. Docker Swarm mode allows multiple manager nodes in a cluster. However, only one of the manager nodes can be selected as a leader.
+- Worker Node receives and executes tasks directly from the manager node
+- Node Availability: In Docker Swarm mode, all nodes with ACTIVE availability can be assigned new tasks, even the manager node can assign itself new tasks (unless it is in DRAIN mode).
+- Service consists of one or more replica tasks which are specified by users when first creating the service.
+- Task: A task in Docker Swarm mode refers to the combination of a single docker container and commands of how it will be run.
+
 ## Week 10
 
 ### OpenStack
@@ -1537,6 +1705,10 @@ Steps：with a running VM, do check pointing of it, then start slowly copying al
 4. Make sure rollback checkbox is marked, so if anything goes wrong, all partially created resources get dumped too
 5. Wait for the magic to happen!
 
+#### How to create an instance of virtual machine through a pre-existing snapshot from a non-public NeCTAR Cloud image?
+
+Authenticate via Keystone; Explains role of APIs including Nova-comput. Nova-scheduler and Nova-conductor for looking up resources required via Swift/Glance and preparing the-VM on machine required and how Key identity used throughout.
+
 ### FaaS
 
 #### Definition
@@ -1598,14 +1770,14 @@ Steps：with a running VM, do check pointing of it, then start slowly copying al
 
 #### Introduction
 
-- Fn is an open-source framework that uses Docker containers to deliver FaaS functionality
+- 定义Fn is an open-source framework that uses Docker containers to deliver FaaS functionality
 - Every function in Fn is a Docker container, ensuring loose coupling between functions (functions can be written in different languages and mixed freely)
 - By using Docker containers as functions, Fn allow to freely mix different languages and environments at the cost of decreased performance, as containers are inherently heavier than threads. However, by using a bit of finesse, a container with a single executable, can weight only a few MBs
 - Fn is the technology behind Oracle Functions (the serverless service of Oracle Cloud)
 - Fn could be deployed on Kubernetes to manage cluster of nodes on which functions are run
 - Fn allows both synchronous and asynchronous functions
 - With Fn Flow, functions can be composed efficiently
-- Fn can add more Docker containers when a function is called more often, and remove containers when the function is called less often
+- 如果需求增加了Fn的应对方式 Fn can add more Docker containers when a function is called more often, and remove containers when the function is called less often
 
 ## Week 11 Security
 
@@ -1620,7 +1792,9 @@ Steps：with a running VM, do check pointing of it, then start slowly copying al
 - **Public Key Infrastructure**
   - A public key infrastructure (PKI) is a set of roles, policies, and procedures needed to create, manage, distribute, use, store, and revoke digital certificates and manage public-key encryption. It is required for activities where rigorous proof is required to confirm the identity of the parties involved in the communication and to validate the information being transferred
 - **Certificate authority**
-  - A certificate authority stores, issues and signs the digital certificates. A registration authority verifies the identity of entities requesting their digital certificates to be stored at the CA.
+  - A certificate authority stores, issues and signs the digital certificates. A registration authority verifies the identity of entities requesting their digital certificates to be stored at the CA.
+- **Registration authority**
+  - A registration authority (RA) is an authority in a network that verifies user requests for a digital certificate and tells the certificate authority (CA) to issue it.
 
 ### Importance
 
