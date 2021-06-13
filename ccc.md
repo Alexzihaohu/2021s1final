@@ -109,7 +109,7 @@ Proportion of speed up depends on parts of program that cannot be parallelized
 
 shows that the theoretical speedup of the execution of the whole task increases with the improvement of the resources of the system and that regardless of the magnitude of the improvement, the theoretical speedup is always limited by the part of the task that cannot benefit from the improvement.
 
-$\alpha$ the proportion of the program that cannot be parallelized and must be executed sequentially(非并行运算中不可并行的时间占比)
+$\alpha$ the proportion of the program that cannot be parallelized and must be executed sequentially(非并行运算中单点不可并行的时间占比)
 
 $T(1) = F(不可并行部分) + P(可并行部分)$, $T(N) = F + P/N$  
 
@@ -126,7 +126,7 @@ Amdahl’s law assumes a fixed problem size. It cannot predict length of time re
 
 Gustafson’s law proposes that programmers tend to set the size of problems to fully exploit the computing power that becomes available as the resources improve. Therefore, if faster equipment is available, larger problems can be solved within the same time. The law redefines efficiency, due to the possibility that limitations imposed by the sequential part of a program may be countered by increasing the total amount of computation.
 
-$\alpha$ 并行运算中不可并行的时间占比
+$\alpha=\frac{F}{F+p}$ 并行运算中单点上不可并行的时间占比
 
 $T(1) = F(不可并行部分) + Np(可并行部分)$, $T(N) = F + p$  
 
@@ -298,6 +298,12 @@ $S = \alpha+N(1-\alpha)=N-\alpha(N-1)$
   - If the prediction turns out to be correct, we gain performance since C does not wait for P anymore.
   - If the prediction is incorrect (which we can find out when P completes), we have to take corrective action, cancel C and restart C with the right value of V again.
 
+#### What features does the HPC facility offer to allow utilization of multiple servers
+
+- MPI allows users to realize data parallel and computing parallel, we can split the data to be run by same program on different nodes.
+- workload Management tool(SLURM) is used to schedule the jobs of users, allocates exclusive and/or non-exclusive access to resources (compute nodes) to users for some duration of time so they can perform work.
+- With a cluster architecture, applications can be more easily parallelized across them. Parallel computing refers to the submission of jobs or processes over multiple processors and by splitting up the data or tasks between them (random number generation as data parallel, driving a vehicle as task parallel).
+
 ## Week 4
 
 **High­performance computing** (HPC) is any computer system whose architecture allows for above average performance. A system that is one of the most powerful in the world, but is poorly designed, could be a "supercomputer".
@@ -434,7 +440,7 @@ mpirun -np 8 python HappyCity1.py 使用 mpi 并行运行代码文件
   - “Right-sizing”
   - Democratisation of computing
 - Cons
-  - Security
+  - Less Security
   - Loss of control
   - Possible lock-in
   - Dependency of Cloud provider continued existence
@@ -442,7 +448,7 @@ mpirun -np 8 python HappyCity1.py 使用 mpi 并行运行代码文件
 #### Private Clouds
 
 - Pros
-  - Control
+  - Easy to Control
   - Consolidation of resources
   - Easier to secure
   - More trust
@@ -466,18 +472,59 @@ mpirun -np 8 python HappyCity1.py 使用 mpi 并行运行代码文件
 
 ![xaas](pic/xaas.png)
 
-- IaaS: a form of cloud computing that provides virtualized computing resources over the internet.
-  - AWS
-  - Azure
-  - Alibaba Cloud
-- PaaS: hardware and software tools available over the internet.
-  - Google App Engine
-  - Heroku
-  - OpenShift
-- SaaS: software that's available via a third-party over the internet.
-  - Gmail
-  - Salesforce
-  - Microsoft Office 365
+- IaaS: a form of cloud computing that provides virtualized computing resources over the internet.(AWS, Azure, Alibaba Cloud)
+  - advantage
+i. The most flexible cloud computing model
+ii. Easy to automate deployment of storage, networking, servers, and processing power
+iii. Hardware purchases can be based on consumption
+iv. Clients retain complete control of their infrastructurev. Resources can be purchased as-needed
+vi. Highly scalable
+
+  - disadvantage
+i. Security. While the customer is in control of the apps, data, middleware, and the OS platform, security threats can still be sourced from the host or other virtual machines (VMs).
+ii. Legacy systems operating in the cloud. Minor enhancement to legacy apps may be required before migrating them to the cloud, possibly leading to new security issue.
+iii. Internal resources and training. Due to inadequate control into the infrastructure however, monitoring and management of the resources may be difficult without adequate training and resources available inhouse.
+iv. Multi-tenant security. Since the hardware resources are dynamically allocated across users as made available, the vendor is required to ensure that other customers cannot access data deposited to storage assets by previous customers.
+
+- PaaS: hardware and software tools available over the internet.(Google App Engine, Heroku, OpenShift)
+  - advantage
+i. Simple, cost-effective development and deployment of apps
+ii. Scalable
+iii. Highly available
+iv. Developers can customize apps without the headache of maintaining the software
+v. Significant reduction in the amount of coding needed
+vi. Automation of business policy
+  - disadv
+i. Data security. Organizations can run their own apps and services using PaaS 
+solutions, but the data residing in third-party, vendor-controlled cloud servers poses security risks and concerns.
+ii. Integrations. The complexity of connecting the data stored within an onsite data center or off-premise cloud is increased, which may affect which apps and services can be adopted with the PaaS offering.
+iii. Vendor lock-in. Business and technical requirements that drive decisions for a specific PaaS solution may not apply in the future.
+iv. Customization of legacy systems. PaaS may not be a plug-and-play solution for existing legacy apps and services.
+v. Operational limitation. Customized cloud operations with management automation workflows may not apply to PaaS solutions, as the platform tends to limit operational capabilities for end users.
+- SaaS: software that's available via a third-party over the internet. (Gmail,Salesforce, Microsoft Office 365)
+  - advantage
+i. Reducing the time and money spent on tedious tasks such as installing, managing.
+ii. Simple and fast configuration
+iii. Anyone can use it in anywhere
+iv. The cost is predictable
+  - disadv
+i. Less customization options
+ii. Difficulty accessing and protecting data
+iii. Vendor lock-in. Vendors may make it easy to join a service and difficult to get out of it.
+iv. Lack of integration support. The complexity of integrations can further limit how the SaaS app or other dependent services can be used.
+v. Feature limitations. Since SaaS apps often come in a standardized form, the choice of features may be a compromising tradeoff against security, cost, performance, or other organizational policies.
+- Functions as a service (FaaS)
+  - Advantage:
+i. Costs: Typically, you only pay for the service you use.
+ii. Easy scalability: Applications built on FaaS platforms scale automatically with the number of users or usage.
+iii. Simplified code
+iv. Decreased latency
+v. Faster time to market
+  - Disadvantage:
+i. Vendor lock-in: Building your application on a FaaS platform may make you reliant on that vendor and make it difficult to switch.ii. Testing hurdles: Depending on the vendor, you may have challenges when creating a test environment for your application.
+iii. Cold starts: There’s sometimes a delay in the execution of a function, as much as 3 seconds, which can adversely impact some types of applications.
+iv. Security: You are at the vendor’s mercy when it comes to security and may not have the visibility you need to ensure the vendor complies with regulations governing your use or storage of certain types of data.
+v. Cost: This item is repeated from the benefits list, but in some cases, FaaS can actually cost more than using dedicated servers, depending on the processes you are running.
 
 #### XaaS security
 
@@ -642,6 +689,14 @@ What are the benefits and drawbacks of these approaches?
 - A set of architectural principles, patterns and criteria that support modularity, encapsulation, loose coupling, separation of concerns, reuse and composability
 - A programming model complete with standards, tools and technologies that supports development and support of services (note that there can be many flavours of services)
 - A middleware solution optimized for service assembly, orchestration, monitoring, and management, e.g. as workflows.
+
+#### How has the evolution of service-oriented architectures supported Cloud computing
+
+- SOA has the standardized interface so that software can interact with each other, but cloud provider will have to build their own interface with different technologies and programming language, which is the bottleneck of SOA.
+- The loose coupling property in SOA make sure communications among servers are efficient because the it minimizes the dependencies among components.
+- The statelessness property both exist in REST and SOAP. This property ensures both the server and the client can understand any message received, even without seeing previous messages.
+- With ReST, which actually helped with the cloud computing, ReST APIs such as Openstack can interact with the cloud itself.
+- Lastly, the service usually supplements with meta data by which they can be discovered and interpreted effectively.
 
 #### SoA Design Principles
 
@@ -930,6 +985,14 @@ While Relational DBMSs are extremely good for ensuring consistency and availabil
 - A typical contact database in a relational data model may include: a person table, a telephone table, an email table and an address table, all linked to each other.
 - The same database in a document-oriented database would entail one document type only, with telephones numbers, email addresses, etc., nested as arrays in the same document
 
+#### advantage and disadvantage of CouchDB for dealing with “big data” compared to more traditional databases
+
+- In traditional database, we have things like schema, keys tables. While we don't have these in noSQL database which is more flexible.
+- In traditional database, we have to write queries. While we don't to do these in noSQL database
+- Because we have heterogenous data, we would like to save them as document in the noSQL database which is not supported by traditional database - The majority of the data comes in a semi-structured or unstructured format from social media, audio, video, texts, and emails.
+- Because noSQL database support mapreduce, we can run mapreduce across many many services which full-scale the processing opportunities for large scale analytics on multiple servers and processing them
+- For ACID, in mySQL transaction needs to be complete while this not a problem with distributed database which shard across multiple servers and everyone of returns with the same answer which can causes overhead on the limitation to do that. CouchDB's nodes can fail but you can still get results.
+
 #### Sharding
 
 - Sharding is the partitioning of a database “horizontally”, i.e. the database rows (or documents) are partitioned into subsets that are stored on different servers. Every subset of rows is called a shard.
@@ -1181,6 +1244,9 @@ A framework for analysing big data has to distribute both data and processing ov
 
 **The core of Hadoop is a fault tolerant file system** that has been explicitly designed to span many nodes
 
+1. NameNode: Responsible for managing the file system's namespace, cluster configuration information, and storage block replication. Similar to a load balancing service.
+2. DataNode: The basic unit of file storage, providing data replication and backup
+
 HDFS blocks are much larger than blocks used by an ordinary file system (say, 4 KB versus 128MB), the reasons for this unusual size are:(hadoop的block文件更大，一般的是4k一个block，Hadoop的一个block有128m)
 
 - Reduced need for memory to store information about where the blocks are (metadata)块的地址少
@@ -1191,6 +1257,10 @@ HDFS blocks are much larger than blocks used by an ordinary file system (say, 4 
 #### HDFS Architecture
 
 A HDFS file is a collection of blocks stored in datanodes, with metadata (such as the position of those blocks) that is stored in namenodes
+
+**HDFS achieve fault-tolerance** fault tolerance in Hadoop HDFS was achieved by creating replicas. HDFS creates a replica of the data block and stores them on multiple machines (DataNode). The number of replicas created depends on the replication factor (by default 3). If any of the machines fails, the data block is accessible from the other machine containing the same copy of data. Hence there is no data loss due to replicas stored on different machines.
+
+HDFS has blocks existing on nodes and there is a name node which contains the meta data about which block is running and if one of the nodes fails then the data is still available somewhere else in the system load balanced. And it will try to rebalnce itself.
 
 ![hadooparchitecture](pic/hadooparchitecture.png)
 
@@ -1785,7 +1855,7 @@ Authenticate via Keystone; Explains role of APIs including Nova-comput. Nova-sch
 
 - **single sign-on**
   - Single sign-on (SSO) is a property of access control of multiple related, yet independent, software systems. With this property, a user logs in with a single ID and password to gain access to a connected system or systems without using different usernames orpasswords, or in some configurations seamlessly sign on at each system.
-- **federated identity**
+- **federated identity** federated authentication
   - A federated identity in information technology is the means of linking a person’s electronic identity and attributes, stored across multiple distinct identity management systems. Federated identity is related to single sign-on (SSO), in which a user’s single authentication ticket, or token, is trusted across multiple IT systems or even organizations.
 - **identity provider**
   - An identity provider (abbreviated IdP) is a system entity that creates, maintains, and manages identity information for principals while providing authentication services to relying party applications within a federation or distributed network. An identity provider is “a trusted provider that lets you use single sign-on (SSO) to access other websites.”
@@ -1840,6 +1910,9 @@ Authenticate via Keystone; Explains role of APIs including Nova-comput. Nova-sch
     - More scalable solution needed
   - Public Key Infrastructures (PKI) underpins MANY systems公钥
     - Based on public key cryptography
+    - an arrangement that binds public key with respective identities of entities(like people and organization).
+    - The binding is established through a process of registration and issurance of certificates at and by a certificate authority
+    - The PKI role that assures valid and correct registration is called a registration authority(RA). RA is responsible for accepting requests for digital certificates and authenticating the entity making the reques
 
 #### Public Key Cryptography
 
@@ -1958,6 +2031,39 @@ Authenticate via Keystone; Explains role of APIs including Nova-comput. Nova-sch
 
 **What are the advantages and disadvantages of the Shibboleth approach for security?**
 
-Adv: support single sign-on
+Adv: 1. support single sign-on 2. It disperses the user management to the origin sites such that the payload sites don't have to do it. 3. It supports group-base and role-base authorization via its attribute service
 
-disAdv: static federation. If a user’s profile has changed, it will not be updated 
+disAdv: static federation. If a user’s profile has changed, it will not be updated（1 The user is present and can answer questions during access to the web-resource.
+2 The user agent can display an HTML form to the user and get a response.
+3 The user agent can be redirected to a different URL.
+4 The web resource is requested using the HTTP protocol.
+5 The user agent accepts HTTP cookies.
+6 Cookies carrying the authentication record are valid throughout the virtual organization.
+7 The authors of the HS and SHIRE agree on the digital-signature method.
+8 The authors of the SHIRE and SHAR agree on a communications mechanism.
+9 The authors of the AA and SHAR agree on a communications mechanism.）
+
+**Practical challenges in supporting cloud interoperability**
+
+- Security
+You don't have single sign-on: login once to access a variety of clouds for various reasons
+- API themselves
+Cloud providers, especially public ones want to lock you in.
+They have different business models, different costs
+
+i. Security issues (single sign-on)
+ii. The ever changing technical/legal landscape
+iii. Scalability and elastic scaling (pay when needed)
+iv. Software deployment easier-snapshots/scripted deployments
+v. More tools, e.g. load balancers, pre-cooked/proven solutions
+vi. Data centres better networked
+vii. Geospatially distributed and easy to migrate applications
+viii. Doesn’t address many of above through (bandwidth from user/organization to data centre etc)
+
+**d. Why isn’t Shibboleth used to access Cloud-based systems more generally?**
+
+- related to trust. differnt cloud provider requires different facts in the Shibboleth
+e.g.: Amazon requires you credit card info while unimelb only requires student info.
+- Static federation
+- i. The overall authentication and access control process requires multi-step processing, which is a bit cumbersome, especially the access control process must be completed after the authentication process, which increases the system delay.
+- ii. Although Shibboleth can perform unified authentication for multi-organization users, it can only return the user's attribute field after verification, and cannot authorize complex resources
