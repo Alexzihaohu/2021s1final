@@ -62,6 +62,15 @@ From computer-computer focus to organisation-organisation focus
 - Job scheduling/resource brokering: Fastest, most secure/reliable, cheapest
 - Virtual organisation support: Security, Public Key Infrastructures
 
+#### Grid cluster cloud computing
+
+- Grid Computing [1]
+  - focus on organizational collaboration, coordination, activity and technologies to doing it
+- Cluster Computing [1]
+  - multiple servers rach-mounted which are accessible and you can run jobs across the cluster
+- Cloud Computing [1]
+  - is a model for enabling ubiquitous, convenient, on-demand network access to a shared pool of configurable computing resources(networks, servers, storage, applications, services) that can be rapidly provisioned and released with minimal management effort or service provider interaction.
+
 ## Week 3 parallelization
 
 ### Compute Scaling
@@ -303,6 +312,37 @@ $S = \alpha+N(1-\alpha)=N-\alpha(N-1)$
 - MPI allows users to realize data parallel and computing parallel, we can split the data to be run by same program on different nodes.
 - workload Management tool(SLURM) is used to schedule the jobs of users, allocates exclusive and/or non-exclusive access to resources (compute nodes) to users for some duration of time so they can perform work.
 - With a cluster architecture, applications can be more easily parallelized across them. Parallel computing refers to the submission of jobs or processes over multiple processors and by splitting up the data or tasks between them (random number generation as data parallel, driving a vehicle as task parallel).
+
+### Version Control system
+
+- 是啥
+  - Version Control = Revision Control = Source Control = Source Code Management
+  - Managing changes to documents, computer programs, large websites, and other
+collections of information
+  - Revision numbers: letters or numbers used to represent each change
+- 为啥用
+  - keep tracking changes
+  - revert to a specific checking point
+  - work with people
+- 分为三种
+  - local：Revision Control System
+  - centralized：Concurrent Versions System (CVS) Subversion (SVN)
+  - distributed：Git  Mercurial
+- 名词
+  - Repository: a collection of commits, branches and tags etc.
+  - Commit: an individual change to a repository.
+  - Branch: represents an independent line of development. It is a parallel version of a repository.
+  - head: A named reference to the commit at the tip of a branch.
+  - HEAD: The current branch.
+  - Tag: A reference typically used to mark a particular point in the commit chain.
+  - Remote repository: A version of something that is hosted on a server (Bitbucket, Github, Gitlab).
+  - Clone: creating a repository from another repository
+  - Checkout: create a local working copy from the repository, or to switch between the branches
+  - Pull: Fetching changes and merging them.
+  - Push: Sending your changes to a remote repository.
+  - Merge: take changes from one branch into another.
+  - Rebase: To reapply a series of changes from one branch to another and reset the head of that branch to the result.
+
 
 ## Week 4
 
@@ -728,6 +768,24 @@ Two patterns to call services over HTTP
 - SOAP/WS is a stack of protocols that covers every aspect of using a remote service, from service discovery, to service description, to the actual request/response
 - ReST makes use of the different HTTP Methods (GET, POST, PUT, DELETE, etc)
 
+**REST advantage**
+
+- REST allows a greater variety of data formats, whereas SOAP only allows XML.
+- Coupled with JSON (which typically works better with data and offers faster parsing), REST is generally considered easier to work with.
+- Thanks to JSON, REST offers better support for browser clients.
+- REST provides superior performance, particularly through caching for information that’s not altered and not dynamic.
+- It is the protocol used most often for major services such as Yahoo, Ebay, Amazon, and even Google.
+- REST is generally faster and uses less bandwidth. It’s also easier to integrate with existing websites with no need to refactor site infrastructure. This enables developers to work faster rather than spend time rewriting a site from scratch. Instead, they can simply add additional functionality.
+
+**SOAP adv**
+
+- For instance, if you need more robust security, SOAP’s support for WS-Security can come in handy. It offers some additional assurances for data privacy and integrity. It also provides support for identity verification through intermediaries rather than just point-to-point, as provided by SSL
+- offers built-in retry logic to compensate for failed communications
+- SOAP’s standard HTTP protocol makes it easier for it to operate across firewalls and proxies without modifications to the SOAP protocol itself. But, because it uses the complex XML format, it tends to be slower compared to middleware such as ICE and COBRA.
+- Additionally, while it’s rarely needed, some use cases require greater transactional reliability than what can be achieved with HTTP (which limits REST in this capacity). If you need ACID-compliant transactions, SOAP is the way to go.
+- In some cases, designing SOAP services can actually be less complex compared to REST. For web services that support complex operations, requiring content and context to be maintained, designing a SOAP service requires less coding in the application layer for transactions, security, trust, and other elements.
+- SOAP is highly extensible through other protocols and technologies. In addition to WS-Security, SOAP supports WS-Addressing, WS-Coordination, WS-ReliableMessaging, and a host of other web services standards, a full list of which you can find on W3C.
+
 ### WSDL(Web Services Description Language)
 
 - The Web Services Description Language (WSDL) is an XML-based interface description language that describes thefunctionality offered by a web service.
@@ -763,6 +821,22 @@ Two patterns to call services over HTTP
   - annotate it
   - or perform other operations on it
 - ...then you should make it a resource.
+
+#### SOA vs ROA
+
+- similar
+  - Much of the philosophy behind SOA applies to ROA,
+    - Standardized service contract
+      - Services adhere to a communications agreement, as defined collectively by one or more service-description documents.|Use defined twitter API|
+    - Service abstraction
+      - Beyond descriptions in the service contract, services hide logic from the outside world.|Twitter decide the API for you to use i.e. the rule how you can see inside through the Twitter, hide things which you have no access to
+    - Service autonomy
+      - Services have control over the logic they encapsulate.|you can have tweets older than 2 weeks than you really can't
+  - both uses HTTP for the communication between client and the resource
+- difference
+  - ROA is compared to SOA as a different (better) approach that can be used to support the definition and creation of services or service endpoints.
+  - ROA has no need to understand what methods mean or deal with complex WSDL.
+
 
 #### Mapping Actions to HTTP Method
 
@@ -1835,6 +1909,11 @@ Authenticate via Keystone; Explains role of APIs including Nova-comput. Nova-sch
 - However, there may be functions that take longer to return a result, hence they incur timeouts and lock connections with clients in the process, hence it is better to transform them into asynchronous functions异步的函数
 - Asynchronous functions return a code that informs the client that the execution has started, and then trigger an event when the execution completes
 - In more complex cases a publish/subscribe pattern involving a queuing system can be used to deal with asynchronous functions
+
+#### availability zone
+
+- availability zone: locations of data centers used to provide logical view of cloud
+- restriction: can't mount volumes to VMs in remote locations. If you have computer in Melbourne, you can't have your storage somewhere else in a different availability zone and you can't mount that volume.
 
 ### Fn
 

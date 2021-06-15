@@ -331,8 +331,8 @@ When dependency graph has cycles then there is a violation of isolation and a po
 #### Conflicts
 
 - write-write (Lost update): 覆盖其他transaction的update
-- read-write (Unrepeatable read): 之前读取的被修改导致再次读取结果不一致
-- write-read (Dirty Read): 未提交的被读取
+- read-write (Unrepeatable read): 之前读取的被另外一个transaction修改导致再次读取结果不一致
+- write-read (Dirty Read): 读取另外一个transaction未提交的结果
 
 #### Dependency relation
 
@@ -414,7 +414,7 @@ Do not guarantee Serializability. However, its transaction throughput is very hi
 ### Buffer Caches
 
 - Data is stored on disks(数据存在disk上)
-- Reading a data item requires reading the whole page of data (typically 4K or 8K bytes of data depending on the page size) from disk to memory containing the item.(读数据胡需要把数据从disk读到memory)
+- Reading a data item requires reading the whole page of data (typically 4K or 8K bytes of data depending on the page size) from disk to memory containing the item.(读数据时需要把数据从disk读到memory)
 - Modifying a data item requires reading the whole page from disk to memory containing the item, modifying the item in memory and writing the whole page to disk.(修改数据需要把所有的数据从memory存回disk)
 - Steps 2 & 3 can be very expensive and we can minimize the number of disk reads and writes by storing as many disk pages as possible in memory (buffer cache)     - this means always check in buffer cache for the disk page of interest if not copy the associated page to buffer cache and perform the  necessary operation.(存读的过程很贵，尽可能多的把数据读到memory上就不要动)
 - When buffer cache is full we need to evict some pages from the buffer cache in order fetch the required pages from the disk.(buffer满了之后要释放一些page到disk)
@@ -444,8 +444,8 @@ Do not guarantee Serializability. However, its transaction throughput is very hi
 
 - Must force the log record which has both old and new values for an update before the corresponding data page gets to disk (stolen).
 - Must write all log records to disk (force) for a Xact before commit.
-- guarantees Atomicity because we can undo updates performed by aborted transactions and redo those updates of committed transactions.
-- guarantees Durability. Exactly how is logging (and recovery!) done.
+- guarantees **Atomicity** because we can undo updates performed by aborted transactions and redo those updates of committed transactions.
+- guarantees **Durability**. Exactly how is logging (and recovery!) done.
 - Use WAL to allow STEAL/NO-FORCE with out sacrificing correctness.
 - LSNs identify log records; linked into backwards chains per transaction (via prevLSN).
 - pageLSN allows comparison of data page and log records.
@@ -472,7 +472,7 @@ PrevLSN: previous LSN, RecLSN: Record LSN
 Periodically, the DBMS creates a checkpoint, in order to minimize the time taken to recover in the event of a system crash.
 
 - Begin checkpoint record:  Indicates when chkpt began.
-- End checkpoint record:  Contains current Xact table and dirty page table.  This is a `fuzzy checkpoint’:
+- End checkpoint record:  Contains current Xact table and dirty page table.  This is a 'fuzzy checkpoint':
   - Other Xacts continue to run; so these tables accurate only as of the time of the begin checkpoint record.
   - No attempt to force dirty pages to disk; effectiveness of checkpoint is limited by the oldest unwritten change to a dirty page. (So it’s a good idea to periodically flush dirty pages to disk!)
 - Store LSN of chkpt record in a safe place (master record).
