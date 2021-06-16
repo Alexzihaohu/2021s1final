@@ -620,7 +620,7 @@ even use ARP spoofing to induce the VM's communication packets to be redirected.
 
 - Deploying complex cloud systems requires a lot of moving parts
   - Easy to forget what software you installed, and what steps you took to configure the system
-  - Error-prone, can be non-repeatable
+  - Manual process is error-prone, can be non-repeatable
   - Snapshots are monolithic - provide no record of what has changed
 - Automation
   - Provides a record of what you did
@@ -1420,9 +1420,9 @@ Resilient Distributed Datasets (RDDs) are the way data are stored in Spark durin
 
 ### Container Docker
 
-#### orchestration
+#### container orchestration
 
-- Container orchestration technologies provides a framework for integrating and managing containers at scale.
+- 定义Container orchestration technologies provides a framework for integrating and managing containers at scale.
 - Benefits: i. Simplify container management processes. ii. Help to manage availability and scaling of containers.
 - Several orchestration tools: Docker Swarm, Kubernetes
 
@@ -1680,7 +1680,7 @@ iii. Can only use native file systems
 iv. Uses same resources as other containers.
 
 - Guest OS
-  - Running on virtual Hardware will have their own OS kernels, thus introduce virtualization overhead. While container allows virtual instances to share a single host OS to reduce these wasted resources
+  - virtual machine run on virtual Hardware will have their own OS kernels. While container allows virtual instances to share a single host OS to reduce these wasted resources
 - Communication
   - Virulization communicate through Ethernet devices. Container communicate through IPC mechanisms
 - Security
@@ -1763,6 +1763,11 @@ Containerization allows virtual instances to share a single host OS (and associa
   - Database service (code-named Trove)
   - Dashboard service (code-named Horizon)
   - Search service (code-named Searchlight)
+
+#### availability zone
+
+- availability zone: locations of data centers used to provide logical view of cloud
+- restriction: can't mount volumes to VMs in remote locations. If you have computer in Melbourne, you can't have your storage somewhere else in a different availability zone and you can't mount that volume.
 
 #### 核心服务key services
 
@@ -1857,11 +1862,12 @@ Authenticate via Keystone; Explains role of APIs including Nova-comput. Nova-sch
 
 #### Definition
 
-- FaaS is also know as Serverless computing (more catchy, but less precise)
+- FaaS is also know as Serverless computing (more catchy, but less precise)定义A way of developing application as collections of functions that are deployed on a computing infrastructure without the need to manage it.
 - The idea behind Serverless/FaaS is to develop software applications without bothering with the infrastructure (especially scaling-up and down as load increases or decreases)无服务器运算
 - Therefore, it is more Server-unseen than Server-less
 - A FaaS service allows functions to be added, removed, updated, executed, and auto-scaled
 - FaaS is an extreme form of microservice architecture
+- FaaS由function组成
 
 #### 为啥用Function
 
@@ -1909,11 +1915,6 @@ Authenticate via Keystone; Explains role of APIs including Nova-comput. Nova-sch
 - However, there may be functions that take longer to return a result, hence they incur timeouts and lock connections with clients in the process, hence it is better to transform them into asynchronous functions异步的函数
 - Asynchronous functions return a code that informs the client that the execution has started, and then trigger an event when the execution completes
 - In more complex cases a publish/subscribe pattern involving a queuing system can be used to deal with asynchronous functions
-
-#### availability zone
-
-- availability zone: locations of data centers used to provide logical view of cloud
-- restriction: can't mount volumes to VMs in remote locations. If you have computer in Melbourne, you can't have your storage somewhere else in a different availability zone and you can't mount that volume.
 
 ### Fn
 
