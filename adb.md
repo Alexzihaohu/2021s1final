@@ -409,6 +409,12 @@ When conflicts are rare, transactions can execute operations without managing lo
 
 Do not guarantee Serializability. However, its transaction throughput is very high compared to two phase locking scheme.
 
+Disadv：Snapshot isolation does not care if the read set, which is not modified by the current transaction, is
+already modified by another transaction when the current transaction commits. This can cause
+consistency issues in applications.
+
+Adv：As a kind of Optimistic Locking, snapshot isolation guarantees all the read operations made in a transaction will see a consistent snapshot of the database, but the transaction will abort when other concurrent transaction which have conflict with it.
+
 ## 9th 10th Week
 
 ### Buffer Caches

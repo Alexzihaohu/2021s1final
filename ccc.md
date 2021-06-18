@@ -64,11 +64,11 @@ From computer-computer focus to organisation-organisation focus
 
 #### Grid cluster cloud computing
 
-- Grid Computing [1]
+- Grid Computing
   - focus on organizational collaboration, coordination, activity and technologies to doing it
-- Cluster Computing [1]
+- Cluster Computing
   - multiple servers rach-mounted which are accessible and you can run jobs across the cluster
-- Cloud Computing [1]
+- Cloud Computing
   - is a model for enabling ubiquitous, convenient, on-demand network access to a shared pool of configurable computing resources(networks, servers, storage, applications, services) that can be rapidly provisioned and released with minimal management effort or service provider interaction.
 
 ## Week 3 parallelization
